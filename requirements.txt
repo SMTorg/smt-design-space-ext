@@ -12,6 +12,5 @@ ruff            # format and lint code
 smt
 jenn >= 1.0.2, <2.0
 egobox ~= 0.20.0
-numpy==1.26.4 
 ConfigSpace==0.6.1 
 adsg-core==1.1.0
