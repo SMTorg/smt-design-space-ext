@@ -17,7 +17,7 @@ with open("./__version__.py") as fp:
 
 
 setup(
-    name="SMT-DesignSpace",
+    name="SMTDesignSpace",
     author="Paul Saves et al.",
     author_email="paul.saves@onera.fr",
     keywords=["SMT, DesignSpace, Graph"],
@@ -38,7 +38,7 @@ setup(
     maintainer="Paul Saves",
     maintainer_email="paul.saves@onera.fr",
     packages=[
-        "smt-design-space",
+        "SMTDesignSpace",
     ],
     include_package_data=True,
     python_requires=">=3.8",
