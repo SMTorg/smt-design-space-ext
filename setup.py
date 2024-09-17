@@ -6,7 +6,6 @@ Author: Paul Saves <paul.saves@onera.fr>
 This package is distributed under New BSD license.
 """
 
-
 from setuptools import setup
 
 version = {}
