@@ -6,14 +6,12 @@ Author: Paul Saves <paul.saves@onera.fr>
 This package is distributed under New BSD license.
 """
 
-import sys
 
 from setuptools import setup
 
 version = {}
 with open("./__version__.py") as fp:
     exec(fp.read(), version)
-
 
 
 setup(
