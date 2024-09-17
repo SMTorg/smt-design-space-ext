@@ -7,10 +7,10 @@ import itertools
 import unittest
 
 import numpy as np
+from SMTDesignSpace import design_space as ds
 
-import smt.utils.design_space as ds
 from smt.sampling_methods import LHS
-from smt.utils.design_space import (
+from SMTDesignSpace.design_space import (
     HAS_CONFIG_SPACE,
     HAS_ADSG,
     ArchDesignSpaceGraph,
