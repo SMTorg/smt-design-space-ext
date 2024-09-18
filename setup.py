@@ -25,7 +25,7 @@ setup(
         "numpy",
         "scikit-learn",
         "ConfigSpace==0.6.1",
-        "adsg-core==1.1.0",
+        "adsg-core==1.1.1",
     ],
     maintainer="Paul Saves",
     maintainer_email="paul.saves@onera.fr",
