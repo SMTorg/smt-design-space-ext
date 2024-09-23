@@ -1320,15 +1320,13 @@ class ArchDesignSpaceGraph(DesignSpace):
         configs1 = []
         configs2 = []
         for i in range(n):
-            configs0.append(
-                self.graph_proc.get_graph(self.graph_proc.get_random_design_vector())[0]
+            gp_get_i = self.graph_proc.get_graph(
+                self.graph_proc.get_random_design_vector()
             )
-            configs1.append(
-                self.graph_proc.get_graph(self.graph_proc.get_random_design_vector())[1]
-            )
-            configs2.append(
-                self.graph_proc.get_graph(self.graph_proc.get_random_design_vector())[2]
-            )
+            configs0.append(gp_get_i[0])
+            configs1.append(gp_get_i[1])
+            configs2.append(gp_get_i[2])
+
         if return_render:
             return np.array(configs1), np.array(configs2), np.array(configs0)
         else:
