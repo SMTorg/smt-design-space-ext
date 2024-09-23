@@ -1283,7 +1283,7 @@ class DesignSpace(BaseDesignSpace):
         return f"{self.__class__.__name__}({self.design_variables!r})"
 
 
-class ArchDesignSpaceGraph(DesignSpace):
+class ArchDesignSpaceGraph(BaseDesignSpace):
     """ """
 
     def __init__(
@@ -1331,6 +1331,45 @@ class ArchDesignSpaceGraph(DesignSpace):
             return np.array(configs1), np.array(configs2), np.array(configs0)
         else:
             return np.array(configs1), np.array(configs2)
+
+    def correct_get_acting(self, x: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Correct the given matrix of design vectors and return the corrected vectors and the is_acting matrix.
+        It is automatically detected whether input is provided in unfolded space or not.
+
+        Parameters
+        ----------
+        x: np.ndarray [n_obs, dim]
+           - Input variables
+
+        Returns
+        -------
+        x_corrected: np.ndarray [n_obs, dim]
+           - Corrected and imputed input variables
+        is_acting: np.ndarray [n_obs, dim]
+           - Boolean matrix specifying for each variable whether it is acting or non-acting
+        """
+        return self._correct_x(x)
+
+    def _correct_x(self, x: np.ndarray):
+        """
+        Fill the activeness matrix (n x nx) and if needed correct design vectors (n x nx) that are partially inactive.
+        Imputation of inactive variables is handled automatically.
+        """
+        is_discrete_mask = self.is_cat_mask
+        is_active = np.copy(x)
+        for i, xi in enumerate(x):
+            x_arch = [
+                int(val) if is_discrete_mask[j] else float(val)
+                for j, val in enumerate(xi)
+            ]
+            _, x_imputed, is_active_arch = self.graph_proc.get_graph(
+                x_arch, create=False
+            )
+            x[i, :] = x_imputed
+            is_active[i, :] = is_active_arch
+        is_active = np.array(is_active, dtype=bool)
+        return x, is_active
 
     def _is_conditionally_acting(self) -> np.ndarray:
         # Decreed variables are the conditionally acting variables

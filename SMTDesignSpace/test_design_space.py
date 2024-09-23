@@ -839,7 +839,37 @@ class Test(unittest.TestCase):
             ),
             design_space2.is_conditionally_acting,
         )
+        np.testing.assert_array_equal(
+            (
+                np.array(
+                    [[1.0, 1.0, 1.0, 2.0, 2.0, 0.0, 0.6, 0.5, 0.5, 0.5, 0.2, 0.2, 0.2]]
+                ),
+                np.array(
+                    [
+                        [
+                            True,
+                            True,
+                            True,
+                            True,
+                            True,
+                            False,
+                            True,
+                            False,
+                            False,
+                            False,
+                            True,
+                            True,
+                            True,
+                        ]
+                    ]
+                ),
+            ),
+            design_space2.correct_get_acting(
+                np.array([[1, 1, 1, 2, 2, 2, 0.6, 0.3, 0.2, 0.2, 0.2, 0.2, 0.2]])
+            ),
+        )
 
 
 if __name__ == "__main__":
-    unittest.main()
+    #    unittest.main()
+    Test().test_adsg_to_legacy()
