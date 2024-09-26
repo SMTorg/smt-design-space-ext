@@ -13,7 +13,7 @@ from smt.sampling_methods import LHS
 from SMTDesignSpace.design_space import (
     HAS_CONFIG_SPACE,
     HAS_ADSG,
-    ArchDesignSpaceGraph,
+    DesignSpaceGraph,
     BaseDesignSpace,
     CategoricalVariable,
     DesignSpace,
@@ -818,7 +818,7 @@ class Test(unittest.TestCase):
             ),
             design_space.is_conditionally_acting,
         )
-        design_space2 = ArchDesignSpaceGraph(adsg=adsg)
+        design_space2 = DesignSpaceGraph(adsg=adsg)
         np.testing.assert_array_equal(
             np.array(
                 [

@@ -1283,7 +1283,7 @@ class DesignSpace(BaseDesignSpace):
         return f"{self.__class__.__name__}({self.design_variables!r})"
 
 
-class ArchDesignSpaceGraph(BaseDesignSpace):
+class DesignSpaceGraph(BaseDesignSpace):
     """ """
 
     def __init__(
