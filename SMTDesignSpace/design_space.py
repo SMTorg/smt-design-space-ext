@@ -1288,12 +1288,20 @@ class ArchDesignSpaceGraph(BaseDesignSpace):
 
     def __init__(
         self,
-        adsg,
+        adsg=None,
+        design_variables=None,
         random_state=None,
     ):
         self.random_state = random_state  # For testing
         seed = self._to_seed(random_state)
-        self.adsg = adsg
+        if adsg is not None:
+            self.adsg = adsg
+        elif design_variables is not None:
+            # to do
+            pass
+        else:
+            raise ValueError("Either design_variables or adsg should be provided.")
+
         self.graph_proc = GraphProcessor(graph=adsg)
 
         if not (HAS_ADSG):
