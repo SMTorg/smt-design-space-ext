@@ -7,7 +7,7 @@ import itertools
 import unittest
 
 import numpy as np
-from SMTDesignSpace import design_space as ds
+from smt_design_space import design_space as ds
 
 from smt.sampling_methods import LHS
 from smt_design_space.design_space import (
@@ -690,7 +690,7 @@ class Test(unittest.TestCase):
     )
     def test_adsg_to_legacy(self):
         from adsg_core import BasicADSG, NamedNode, DesignVariableNode
-        from smt_design_space.design_space import ensure_design_space
+        from smt_design_space   .design_space import ensure_design_space
         from adsg_core import GraphProcessor
 
         # Create the ADSG
