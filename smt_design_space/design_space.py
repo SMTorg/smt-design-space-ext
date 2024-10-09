@@ -1336,7 +1336,7 @@ class DesignSpaceGraph(BaseDesignSpace):
         configs2 = []
         for i in range(n):
             gp_get_i = self.graph_proc.get_graph(
-                self.graph_proc.get_random_design_vector(), create=False
+                self.graph_proc.get_random_design_vector(), create=return_render
             )
             configs0.append(gp_get_i[0])
             configs1.append(gp_get_i[1])
