@@ -1684,7 +1684,7 @@ def _legacy_to_adsg(legacy_ds: "DesignSpace") -> BasicADSG:
                 ].index(str(value)[:])
                 value_node = meta_nodes[meta_node_ind]
 
-                meta_node = nodes[f"x{legacy_ds._cs._hyperparameter_idx[meta_var]}"]
+                nodes[f"x{legacy_ds._cs._hyperparameter_idx[meta_var]}"]
                 adsg.add_edge(
                     value_node, decreed_node
                 )  # Linking decreed node to meta node
