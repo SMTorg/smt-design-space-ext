@@ -872,6 +872,87 @@ class Test(unittest.TestCase):
             ),
         )
 
+    @unittest.skipIf(
+        not (HAS_CONFIG_SPACE and HAS_ADSG),
+        "Architecture Design Space Graph or ConfigSpace not installed.",
+    )
+    def test_legacy_to_adsg(self):
+        # Define the mixed hierarchical design space
+        design_space3 = DesignSpaceGraph(
+            design_variables=[
+                FloatVariable(0, 1),  # Learning rate
+                CategoricalVariable(
+                    ["ReLU", "Sigmoid", "Tanh"]
+                ),  # 3 possible choices for the activation function
+                CategoricalVariable(
+                    ["ASGD", "Adam"]
+                ),  # 2 possible choices for the optimizer
+                FloatVariable(0, 1),  # ASGD Decay
+                FloatVariable(0, 1),  # ASGD Power update
+                FloatVariable(0, 1),  # ASGD Average start
+                FloatVariable(0, 1),  # Adam Running Average 1
+                FloatVariable(0, 1),  # Adam Running Average 2
+                FloatVariable(0, 1),  # Adam Numerical Stability
+                OrdinalVariable(
+                    ["1", "2", "3"]
+                ),  # for the number of hidden layers  (l=x9)
+                OrdinalVariable(
+                    ["25", "30", "35", "40", "45"]
+                ),  # number of hidden neurons layer 1
+                OrdinalVariable(
+                    ["25", "30", "35", "40", "45"]
+                ),  # number of hidden neurons layer 2
+                OrdinalVariable(
+                    ["25", "30", "35", "40", "45"]
+                ),  # number of hidden neurons layer 3
+            ]
+        )
+
+        # ASGD vs Adam optimizer options activated or deactivated
+        design_space3.declare_decreed_var(
+            decreed_var=3, meta_var=2, meta_value=["ASGD"]
+        )
+        design_space3.declare_decreed_var(
+            decreed_var=4, meta_var=2, meta_value=["ASGD"]
+        )
+        design_space3.declare_decreed_var(
+            decreed_var=5, meta_var=2, meta_value=["ASGD"]
+        )
+        design_space3.declare_decreed_var(
+            decreed_var=6, meta_var=2, meta_value=["Adam"]
+        )
+        design_space3.declare_decreed_var(
+            decreed_var=7, meta_var=2, meta_value=["Adam"]
+        )
+        design_space3.declare_decreed_var(
+            decreed_var=8, meta_var=2, meta_value=["Adam"]
+        )
+
+        # Number of hidden layers: Activate x11 when x9 in [2, 3] and x12 when x9 == 3
+        design_space3.add_value_constraint(
+            var1=9, value1="3", var2=2, value2=["Adam"]
+        )  # Forbid 3  hidden layers with Adam
+        design_space3.declare_decreed_var(
+            decreed_var=10, meta_var=9, meta_value=["1", "2", "3"]
+        )
+        design_space3.declare_decreed_var(
+            decreed_var=11, meta_var=9, meta_value=["2", "3"]
+        )
+        design_space3.declare_decreed_var(decreed_var=12, meta_var=9, meta_value="3")
+        design_space3.add_value_constraint(
+            var1=10, value1=["40", "45"], var2=2, value2=["ASGD"]
+        )  # Forbid more than 35 neurons with ASGD
+        design_space3.add_value_constraint(
+            var1=11, value1=["40", "45"], var2=2, value2=["ASGD"]
+        )  # Forbid more than 35 neurons with ASGD
+        design_space3.add_value_constraint(
+            var1=12, value1=["40", "45"], var2=2, value2=["ASGD"]
+        )  # Forbid more than 35 neurons with ASGD
+
+        self.assertEquals(
+            len(design_space3._sample_valid_x(1, return_render=False)[0][0]), 13
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
