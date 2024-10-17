@@ -1,5 +1,6 @@
 smt
 ConfigSpace==0.6.1 
 adsg-core==1.1.1
-pytest # tests runner
-ruff   # format and lint code
+pytest     # tests runner
+pytest-cov # allows to get coverage report
+ruff       # format and lint code
