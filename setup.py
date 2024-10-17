@@ -7,34 +7,29 @@ This package is distributed under New BSD license.
 """
 
 from setuptools import setup
-
-version = {}
-with open("./__version__.py") as fp:
-    exec(fp.read(), version)
+from smt_design_space_ext import __version__
 
 
 setup(
-    name="smt_design_space",
+    name="smt_design_space_ext",
     author="Paul Saves et al.",
     author_email="paul.saves@onera.fr",
     keywords=["SMT, DesignSpace, Graph"],
     license="ONERA",
-    description="SMT Design Space",
+    description="SMT design space extension for hierarchical variables handling",
     install_requires=[
-        "scipy",
-        "numpy",
-        "scikit-learn",
+        "smt",
         "ConfigSpace==0.6.1",
         "adsg-core==1.1.1",
     ],
     maintainer="Paul Saves",
     maintainer_email="paul.saves@onera.fr",
     packages=[
-        "smt_design_space",
+        "smt_design_space_ext",
     ],
     include_package_data=True,
-    python_requires=">=3.8",
-    version=version["__version__"],
+    python_requires=">=3.9",
+    version=__version__,
     zip_safe=False,
     url="https://github.com/SMTorg/smt-design-space",  # use the URL to the github repo
     download_url="https://github.com/SMTorg/smt-design-space/releases",
