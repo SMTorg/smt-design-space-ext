@@ -7,11 +7,13 @@ This package is distributed under New BSD license.
 """
 
 from setuptools import setup
-from smt_design_space_ext import __version__
 
+# Import __version__ without importing the module in setup
+exec(open("./smt_design_space_ext/version.py").read())
 
 setup(
     name="smt_design_space_ext",
+    version=__version__,  # noqa
     author="Paul Saves et al.",
     author_email="paul.saves@onera.fr",
     keywords=["SMT, DesignSpace, Graph"],
@@ -29,7 +31,6 @@ setup(
         "smt_design_space_ext",
     ],
     python_requires=">=3.9",
-    version=__version__,
     url="https://github.com/SMTorg/smt-design-space",  # use the URL to the github repo
     download_url="https://github.com/SMTorg/smt-design-space/releases",
 )
