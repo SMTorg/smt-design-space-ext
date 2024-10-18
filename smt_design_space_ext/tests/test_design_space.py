@@ -2,35 +2,27 @@
 Author: Jasper Bussemaker <jasper.bussemaker@dlr.de>
 """
 
-import contextlib
 import itertools
 import unittest
 
 import numpy as np
-from smt_design_space import design_space as ds
 
 from smt.sampling_methods import LHS
-from smt_design_space.design_space import (
-    HAS_CONFIG_SPACE,
-    HAS_ADSG,
-    DesignSpaceGraph,
+
+from smt.design_space import (
     BaseDesignSpace,
     CategoricalVariable,
-    DesignSpace,
     FloatVariable,
     IntegerVariable,
     OrdinalVariable,
 )
 
-
-@contextlib.contextmanager
-def simulate_no_config_space(do_simulate=True):
-    if ds.HAS_CONFIG_SPACE and do_simulate:
-        ds.HAS_CONFIG_SPACE = False
-        yield
-        ds.HAS_CONFIG_SPACE = True
-    else:
-        yield
+from smt_design_space_ext.design_space import (
+    HAS_CONFIG_SPACE,
+    HAS_ADSG,
+    DesignSpace,
+    DesignSpaceGraph,
+)
 
 
 class Test(unittest.TestCase):
@@ -194,8 +186,6 @@ class Test(unittest.TestCase):
 
     def test_create_design_space(self):
         DesignSpace([FloatVariable(0, 1)])
-        with simulate_no_config_space():
-            DesignSpace([FloatVariable(0, 1)])
 
     def test_design_space(self):
         ds = DesignSpace(
@@ -577,41 +567,35 @@ class Test(unittest.TestCase):
             def _is_conditionally_acting(self) -> np.ndarray:
                 return np.zeros((self.n_dv,), dtype=bool)
 
-        for simulate_no_cs in [True, False]:
-            with simulate_no_config_space(simulate_no_cs):
-                ds = WrongDesignSpace(
-                    [
-                        CategoricalVariable(["A", "B", "C"]),  # x0
-                        CategoricalVariable(["E", "F"]),  # x1
-                        IntegerVariable(0, 1),  # x2
-                        FloatVariable(0, 1),  # x3
-                    ],
-                    random_state=42,
-                )
-                ds.declare_decreed_var(
-                    decreed_var=3, meta_var=0, meta_value="A"
-                )  # Activate x3 if x0 == A
-                self.assertRaises(
-                    RuntimeError, lambda: ds.sample_valid_x(10, random_state=42)
-                )
+        ds = WrongDesignSpace(
+            [
+                CategoricalVariable(["A", "B", "C"]),  # x0
+                CategoricalVariable(["E", "F"]),  # x1
+                IntegerVariable(0, 1),  # x2
+                FloatVariable(0, 1),  # x3
+            ],
+            random_state=42,
+        )
+        ds.declare_decreed_var(
+            decreed_var=3, meta_var=0, meta_value="A"
+        )  # Activate x3 if x0 == A
+        self.assertRaises(RuntimeError, lambda: ds.sample_valid_x(10, random_state=42))
 
     def test_check_conditionally_acting_2(self):
-        for simulate_no_cs in [True, False]:
-            with simulate_no_config_space(simulate_no_cs):
-                ds = DesignSpace(
-                    [
-                        CategoricalVariable(["A", "B", "C"]),  # x0
-                        CategoricalVariable(["E", "F"]),  # x1
-                        IntegerVariable(0, 1),  # x2
-                        FloatVariable(0, 1),  # x3
-                    ],
-                    random_state=42,
-                )
-                ds.declare_decreed_var(
-                    decreed_var=0, meta_var=1, meta_value="E"
-                )  # Activate x3 if x0 == A
+        ds = DesignSpace(
+            [
+                CategoricalVariable(["A", "B", "C"]),  # x0
+                CategoricalVariable(["E", "F"]),  # x1
+                IntegerVariable(0, 1),  # x2
+                FloatVariable(0, 1),  # x3
+            ],
+            random_state=42,
+        )
+        ds.declare_decreed_var(
+            decreed_var=0, meta_var=1, meta_value="E"
+        )  # Activate x3 if x0 == A
 
-                ds.sample_valid_x(10, random_state=42)
+        ds.sample_valid_x(10, random_state=42)
 
     @unittest.skipIf(
         not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
@@ -693,7 +677,7 @@ class Test(unittest.TestCase):
     )
     def test_adsg_to_legacy(self):
         from adsg_core import BasicADSG, NamedNode, DesignVariableNode
-        from smt_design_space.design_space import ensure_design_space
+        from smt_design_space_ext.design_space import ensure_design_space
         from adsg_core import GraphProcessor
 
         # Create the ADSG
