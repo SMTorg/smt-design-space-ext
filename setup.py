@@ -15,7 +15,7 @@ setup(
     author="Paul Saves et al.",
     author_email="paul.saves@onera.fr",
     keywords=["SMT, DesignSpace, Graph"],
-    license="ONERA",
+    license="BSD-3",
     description="SMT design space extension for hierarchical variables handling",
     install_requires=[
         "smt",
@@ -27,10 +27,8 @@ setup(
     packages=[
         "smt_design_space_ext",
     ],
-    include_package_data=True,
     python_requires=">=3.9",
     version=__version__,
-    zip_safe=False,
     url="https://github.com/SMTorg/smt-design-space",  # use the URL to the github repo
     download_url="https://github.com/SMTorg/smt-design-space/releases",
 )
