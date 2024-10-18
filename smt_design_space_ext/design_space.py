@@ -12,13 +12,13 @@ from smt.sampling_methods import LHS
 
 # Here we import design space base classes from smt
 # We do not import smt.design_space as it would be circular!!!
-from smt.design_space.design_space import (
-    DesignVariable,
+from smt.design_space import (
     FloatVariable,
     IntegerVariable,
     OrdinalVariable,
     CategoricalVariable,
     BaseDesignSpace,
+    DesignVariable,
 )
 
 try:
@@ -1039,7 +1039,7 @@ def _convert_adsg_to_legacy(adsg) -> "BaseDesignSpace":
     return design_space
 
 
-def _legacy_to_adsg(legacy_ds: "DesignSpace") -> BasicADSG:
+def _legacy_to_adsg(legacy_ds: "DesignSpace") -> "BasicADSG":
     """
     Interface to turn a legacy DesignSpace back into an ADSG instance.
 
