@@ -18,6 +18,7 @@ setup(
     license="BSD-3",
     description="SMT design space extension for hierarchical variables handling",
     install_requires=[
+        "numpy",
         "smt",
         "ConfigSpace==0.6.1",
         "adsg-core==1.1.1",
