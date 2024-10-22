@@ -15,7 +15,7 @@ from smt.sampling_methods import LHS
 
 # Here we import design space base classes from smt
 # We do not import smt.design_space as it would be circular!!!
-from smt.design_space import (
+from smt_design_space_ext import (
     FloatVariable,
     IntegerVariable,
     OrdinalVariable,
@@ -66,13 +66,29 @@ except ImportError:
     class UniformIntegerHyperparameter:
         pass
 
-from smt_design_space_ext  import ensure_design_space, BaseDesignSpace,FixedIntegerParam,NoDefaultConfigurationSpace
+from smt_design_space_ext  import BaseDesignSpace,FixedIntegerParam,NoDefaultConfigurationSpace
 
 
 VarValueType = Union[int, str, List[Union[int, str]]]
 
+def ensure_design_space(xt=None, xlimits=None, design_space=None) -> "BaseDesignSpace":
+    """Interface to turn legacy input formats into a DesignSpace"""
 
-class DesignSpace(BaseDesignSpace):
+    if design_space is not None and isinstance(design_space, BaseDesignSpace):
+        return design_space
+    if HAS_ADSG and design_space is not None and isinstance(design_space, ADSG):
+        return ValueError("Use AdsgDesignSpaceImpl instead.")
+
+    if xlimits is not None:
+        return ConfigSpaceDesignSpaceImpl(xlimits)
+
+    if xt is not None:
+        return ConfigSpaceDesignSpaceImpl([[np.min(xt) - 0.99, np.max(xt) + 1e-4]] * xt.shape[1])
+
+    raise ValueError("Nothing defined that could be interpreted as a design space!")
+
+
+class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
     """
     Class for defining a (hierarchical) design space by defining design variables, defining decreed variables
     (optional), and adding value constraints (optional).

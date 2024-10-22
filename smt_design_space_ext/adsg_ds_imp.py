@@ -15,7 +15,7 @@ from smt.sampling_methods import LHS
 
 # Here we import design space base classes from smt
 # We do not import smt.design_space as it would be circular!!!
-from smt.design_space import (
+from smt_design_space_ext import (
     FloatVariable,
     IntegerVariable,
     OrdinalVariable,
@@ -23,6 +23,7 @@ from smt.design_space import (
     BaseDesignSpace,
     DesignVariable,
     DesignSpace,
+    ConfigSpaceDesignSpaceImpl,
 )
 
 try:
@@ -81,10 +82,10 @@ def ensure_design_space(xt=None, xlimits=None, design_space=None) -> "BaseDesign
         return _convert_adsg_to_legacy(design_space)
 
     if xlimits is not None:
-        return DesignSpace(xlimits)
+        return ConfigSpaceDesignSpaceImpl(xlimits)
 
     if xt is not None:
-        return DesignSpace([[np.min(xt) - 0.99, np.max(xt) + 1e-4]] * xt.shape[1])
+        return ConfigSpaceDesignSpaceImpl([[np.min(xt) - 0.99, np.max(xt) + 1e-4]] * xt.shape[1])
 
     raise ValueError("Nothing defined that could be interpreted as a design space!")
 
@@ -120,7 +121,7 @@ def _convert_adsg_to_legacy(adsg) -> "BaseDesignSpace":
             )
             listvar.append(OrdinalVariable(a))
 
-    design_space = DesignSpace(listvar)
+    design_space = ConfigSpaceDesignSpaceImpl(listvar)
 
     active_vars = [i for i, x in enumerate(gp.dv_is_conditionally_active) if x]
     nodelist = list(adsg._graph.nodes)
@@ -163,73 +164,74 @@ def _convert_adsg_to_legacy(adsg) -> "BaseDesignSpace":
         )
 
     edges = np.array(list(adsg._graph.edges.data()))
-    edgestype = [edge["type"] for edge in edges[:, 2]]
-    incomp_nodes = []
-    for i, edge in enumerate(edges):
-        if edgestype[i] == EdgeType.INCOMPATIBILITY:
-            incomp_nodes.append([edges[i][0], edges[i][1]])
-
-    def remove_symmetry(lst):
-        unique_pairs = set()
-
-        for pair in lst:
-            # Sort the pair based on the _id attribute of NamedNode
-            sorted_pair = tuple(sorted(pair, key=lambda node: node._id))
-            unique_pairs.add(sorted_pair)
-
-        # Convert set of tuples back to list of lists if needed
-        return [list(pair) for pair in unique_pairs]
-
-    incomp_nodes = remove_symmetry(incomp_nodes)
-
-    for pair in incomp_nodes:
-        node1, node2 = pair
-        vars1 = next(iter(adsg._graph.predecessors(node1)))
-        while str(vars1).split("[")[0] != "D":
+    if len(edges) > 0 :
+        edgestype = [edge["type"] for edge in edges[:, 2]]
+        incomp_nodes = []
+        for i, edge in enumerate(edges):
+            if edgestype[i] == EdgeType.INCOMPATIBILITY:
+                incomp_nodes.append([edges[i][0], edges[i][1]])
+    
+        def remove_symmetry(lst):
+            unique_pairs = set()
+    
+            for pair in lst:
+                # Sort the pair based on the _id attribute of NamedNode
+                sorted_pair = tuple(sorted(pair, key=lambda node: node._id))
+                unique_pairs.add(sorted_pair)
+    
+            # Convert set of tuples back to list of lists if needed
+            return [list(pair) for pair in unique_pairs]
+    
+        incomp_nodes = remove_symmetry(incomp_nodes)
+    
+        for pair in incomp_nodes:
+            node1, node2 = pair
             vars1 = next(iter(adsg._graph.predecessors(node1)))
-        vars2 = next(iter(adsg._graph.predecessors(node2)))
-        while str(vars1).split("[")[0] != "D":
+            while str(vars1).split("[")[0] != "D":
+                vars1 = next(iter(adsg._graph.predecessors(node1)))
             vars2 = next(iter(adsg._graph.predecessors(node2)))
-    for pair in incomp_nodes:
-        node1, node2 = pair
-        vars1 = next(iter(adsg._graph.predecessors(node1)))
-        while str(vars1).split("[")[0] != "D":
+            while str(vars1).split("[")[0] != "D":
+                vars2 = next(iter(adsg._graph.predecessors(node2)))
+        for pair in incomp_nodes:
+            node1, node2 = pair
             vars1 = next(iter(adsg._graph.predecessors(node1)))
-        vars2 = next(iter(adsg._graph.predecessors(node2)))
-        while str(vars1).split("[")[0] != "D":
+            while str(vars1).split("[")[0] != "D":
+                vars1 = next(iter(adsg._graph.predecessors(node1)))
             vars2 = next(iter(adsg._graph.predecessors(node2)))
-        namevar1 = (
-            str(vars1)
-            .replace("D[Sel:", "")
-            .replace("DV[", "")
-            .replace(" ", "")
-            .replace("[", "")
-            .replace("]", "")
-        )
-        namevar2 = (
-            str(vars2)
-            .replace("D[Sel:", "")
-            .replace("DV[", "")
-            .replace(" ", "")
-            .replace("[", "")
-            .replace("]", "")
-        )
-        design_space.add_value_constraint(
-            var1=varnames.index(namevar1),
-            value1=[str(node1)[1:-1]],
-            var2=varnames.index(namevar2),
-            value2=[str(node2)[1:-1]],
-        )  # Forbid more than 35 neurons with ASGD
+            while str(vars1).split("[")[0] != "D":
+                vars2 = next(iter(adsg._graph.predecessors(node2)))
+            namevar1 = (
+                str(vars1)
+                .replace("D[Sel:", "")
+                .replace("DV[", "")
+                .replace(" ", "")
+                .replace("[", "")
+                .replace("]", "")
+            )
+            namevar2 = (
+                str(vars2)
+                .replace("D[Sel:", "")
+                .replace("DV[", "")
+                .replace(" ", "")
+                .replace("[", "")
+                .replace("]", "")
+            )
+            design_space.add_value_constraint(
+                var1=varnames.index(namevar1),
+                value1=[str(node1)[1:-1]],
+                var2=varnames.index(namevar2),
+                value2=[str(node2)[1:-1]],
+            )  # Forbid more than 35 neurons with ASGD
 
     return design_space
 
 
-def _legacy_to_adsg(legacy_ds: "DesignSpace") -> "BasicADSG":
+def _legacy_to_adsg(legacy_ds: "ConfigSpaceDesignSpaceImpl") -> "BasicADSG":
     """
     Interface to turn a legacy DesignSpace back into an ADSG instance.
 
     Parameters:
-    legacy_ds (DesignSpace): The legacy DesignSpace instance.
+    legacy_ds (ConfigSpaceDesignSpaceImpl): The legacy ConfigSpaceDesignSpaceImpl instance.
 
     Returns:
     BasicADSG: The corresponding ADSG graph.
@@ -324,7 +326,7 @@ def _legacy_to_adsg(legacy_ds: "DesignSpace") -> "BasicADSG":
     adsg = adsg.set_start_nodes(start_nodes)
     return adsg
 
-class DesignSpaceGraph(BaseDesignSpace):
+class AdsgDesignSpaceImpl(BaseDesignSpace):
     """ """
 
     def __init__(
@@ -339,7 +341,7 @@ class DesignSpaceGraph(BaseDesignSpace):
             self.adsg = adsg
         elif design_variables is not None:
             # to do
-            self.ds_leg = DesignSpace(
+            self.ds_leg = ConfigSpaceDesignSpaceImpl(
                 design_variables=design_variables, random_state=seed
             )
             self.adsg = _legacy_to_adsg(self.ds_leg)

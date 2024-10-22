@@ -9,19 +9,17 @@ import numpy as np
 
 from smt.sampling_methods import LHS
 
-from smt.design_space import (
+from smt_design_space_ext import (
+    HAS_CONFIG_SPACE,
+    HAS_ADSG,
+    DesignSpace,
+    AdsgDesignSpaceImpl,
+    ConfigSpaceDesignSpaceImpl,
     BaseDesignSpace,
     CategoricalVariable,
     FloatVariable,
     IntegerVariable,
     OrdinalVariable,
-)
-
-from smt_design_space_ext.design_space import (
-    HAS_CONFIG_SPACE,
-    HAS_ADSG,
-    DesignSpace,
-    DesignSpaceGraph,
 )
 
 
@@ -185,10 +183,10 @@ class Test(unittest.TestCase):
         np.testing.assert_array_equal(is_act_fold_mask, is_acting)
 
     def test_create_design_space(self):
-        DesignSpace([FloatVariable(0, 1)])
+        ConfigSpaceDesignSpaceImpl([FloatVariable(0, 1)])
 
     def test_design_space(self):
-        ds = DesignSpace(
+        ds = ConfigSpaceDesignSpaceImpl(
             [
                 CategoricalVariable(["A", "B", "C"]),
                 OrdinalVariable(["0", "1"]),
@@ -290,7 +288,7 @@ class Test(unittest.TestCase):
         ds.correct_get_acting(np.array([[0, 0, 0, 1.6]]))
 
     def test_folding_mask(self):
-        ds = DesignSpace(
+        ds = ConfigSpaceDesignSpaceImpl(
             [
                 CategoricalVariable(["A", "B", "C"]),
                 CategoricalVariable(["A", "B", "C"]),
@@ -314,23 +312,23 @@ class Test(unittest.TestCase):
         self.assertTrue(np.all(is_act_folded == is_act))
 
     def test_float_design_space(self):
-        ds = DesignSpace([(0, 1), (0.5, 2.5), (-0.4, 10)])
+        ds = ConfigSpaceDesignSpaceImpl([(0, 1), (0.5, 2.5), (-0.4, 10)])
         assert ds.n_dv == 3
         assert all(isinstance(dv, FloatVariable) for dv in ds.design_variables)
         assert np.all(ds.get_num_bounds() == np.array([[0, 1], [0.5, 2.5], [-0.4, 10]]))
 
-        ds = DesignSpace([[0, 1], [0.5, 2.5], [-0.4, 10]])
+        ds = ConfigSpaceDesignSpaceImpl([[0, 1], [0.5, 2.5], [-0.4, 10]])
         assert ds.n_dv == 3
         assert all(isinstance(dv, FloatVariable) for dv in ds.design_variables)
         assert np.all(ds.get_num_bounds() == np.array([[0, 1], [0.5, 2.5], [-0.4, 10]]))
 
-        ds = DesignSpace(np.array([[0, 1], [0.5, 2.5], [-0.4, 10]]))
+        ds = ConfigSpaceDesignSpaceImpl(np.array([[0, 1], [0.5, 2.5], [-0.4, 10]]))
         assert ds.n_dv == 3
         assert all(isinstance(dv, FloatVariable) for dv in ds.design_variables)
         assert np.all(ds.get_num_bounds() == np.array([[0, 1], [0.5, 2.5], [-0.4, 10]]))
 
     def test_design_space_hierarchical(self):
-        ds = DesignSpace(
+        ds = ConfigSpaceDesignSpaceImpl(
             [
                 CategoricalVariable(["A", "B", "C"]),  # x0
                 CategoricalVariable(["E", "F"]),  # x1
@@ -427,7 +425,7 @@ class Test(unittest.TestCase):
         not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
     )
     def test_design_space_hierarchical_config_space(self):
-        ds = DesignSpace(
+        ds = ConfigSpaceDesignSpaceImpl(
             [
                 CategoricalVariable(["A", "B", "Cc"]),  # x0
                 CategoricalVariable(["E", "F"]),  # x1
@@ -520,7 +518,7 @@ class Test(unittest.TestCase):
         not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
     )
     def test_design_space_continuous(self):
-        ds = DesignSpace(
+        ds = ConfigSpaceDesignSpaceImpl(
             [
                 FloatVariable(0, 1),  # x0
                 FloatVariable(0, 1),  # x1
@@ -539,7 +537,7 @@ class Test(unittest.TestCase):
         x_sampled, is_acting_sampled = ds.sample_valid_x(100, random_state=42)
         self.assertTrue(np.min(x_sampled[:, 0] - x_sampled[:, 1]) > 0)
         self.assertTrue(np.min(x_sampled[:, 1] - x_sampled[:, 2]) > 0)
-        ds = DesignSpace(
+        ds = ConfigSpaceDesignSpaceImpl(
             [
                 IntegerVariable(0, 2),  # x0
                 FloatVariable(0, 2),  # x1
@@ -563,7 +561,7 @@ class Test(unittest.TestCase):
         not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
     )
     def test_check_conditionally_acting(self):
-        class WrongDesignSpace(DesignSpace):
+        class WrongDesignSpace(ConfigSpaceDesignSpaceImpl):
             def _is_conditionally_acting(self) -> np.ndarray:
                 return np.zeros((self.n_dv,), dtype=bool)
 
@@ -582,7 +580,7 @@ class Test(unittest.TestCase):
         self.assertRaises(RuntimeError, lambda: ds.sample_valid_x(10, random_state=42))
 
     def test_check_conditionally_acting_2(self):
-        ds = DesignSpace(
+        ds = ConfigSpaceDesignSpaceImpl(
             [
                 CategoricalVariable(["A", "B", "C"]),  # x0
                 CategoricalVariable(["E", "F"]),  # x1
@@ -601,7 +599,7 @@ class Test(unittest.TestCase):
         not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
     )
     def test_restrictive_value_constraint_ordinal(self):
-        ds = DesignSpace(
+        ds = ConfigSpaceDesignSpaceImpl(
             [
                 OrdinalVariable(["0", "1", "2"]),
                 OrdinalVariable(["0", "1", "2"]),
@@ -625,7 +623,7 @@ class Test(unittest.TestCase):
         not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
     )
     def test_restrictive_value_constraint_integer(self):
-        ds = DesignSpace(
+        ds = ConfigSpaceDesignSpaceImpl(
             [
                 IntegerVariable(0, 2),
                 IntegerVariable(0, 2),
@@ -650,7 +648,7 @@ class Test(unittest.TestCase):
         not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
     )
     def test_restrictive_value_constraint_categorical(self):
-        ds = DesignSpace(
+        ds = ConfigSpaceDesignSpaceImpl(
             [
                 CategoricalVariable(["a", "b", "c"]),
                 CategoricalVariable(["a", "b", "c"]),
@@ -677,7 +675,7 @@ class Test(unittest.TestCase):
     )
     def test_adsg_to_legacy(self):
         from adsg_core import BasicADSG, NamedNode, DesignVariableNode
-        from smt_design_space_ext.design_space import ensure_design_space
+        from smt_design_space_ext.adsg_ds_imp import ensure_design_space
         from adsg_core import GraphProcessor
 
         # Create the ADSG
@@ -805,7 +803,7 @@ class Test(unittest.TestCase):
             ),
             design_space.is_conditionally_acting,
         )
-        design_space2 = DesignSpaceGraph(adsg=adsg)
+        design_space2 = AdsgDesignSpaceImpl(adsg=adsg)
         np.testing.assert_array_equal(
             np.array(
                 [
@@ -862,7 +860,7 @@ class Test(unittest.TestCase):
     )
     def test_legacy_to_adsg(self):
         # Define the mixed hierarchical design space
-        design_space3 = DesignSpaceGraph(
+        design_space3 = AdsgDesignSpaceImpl(
             design_variables=[
                 FloatVariable(0, 1),  # Learning rate
                 CategoricalVariable(
@@ -936,7 +934,11 @@ class Test(unittest.TestCase):
         self.assertEquals(
             len(design_space3._sample_valid_x(1, return_render=False)[0][0]), 13
         )
-
-
+    def test_smt(self) : 
+        from smt.applications.tests.test_mixed_integer import TestMixedInteger
+        test_smt_mi =  TestMixedInteger()
+        test_smt_mi.run_mixed_cs_example()
+        test_smt_mi.run_hierarchical_design_space_example()
+        test_smt_mi.run_mixed_homo_gaussian_example()
 if __name__ == "__main__":
     unittest.main()
