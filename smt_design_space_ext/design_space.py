@@ -4,21 +4,15 @@ Author: Jasper Bussemaker <jasper.bussemaker@dlr.de>
 This package is distributed under New BSD license.
 """
 
-from typing import List, Sequence, Tuple, Union
+from typing import List, Union
 
 import numpy as np
 
-from smt.sampling_methods import LHS
 
 # Here we import design space base classes from smt
 # We do not import smt.design_space as it would be circular!!!
 from smt.design_space import (
-    FloatVariable,
-    IntegerVariable,
-    OrdinalVariable,
-    CategoricalVariable,
     BaseDesignSpace,
-    DesignVariable,
     DesignSpace,
 )
 
@@ -83,6 +77,7 @@ def ensure_design_space(xt=None, xlimits=None, design_space=None) -> "BaseDesign
 
 VarValueType = Union[int, str, List[Union[int, str]]]
 
+
 class NoDefaultConfigurationSpace(ConfigurationSpace):
     """ConfigurationSpace that supports no default configuration"""
 
@@ -114,5 +109,3 @@ class FixedIntegerParam(UniformIntegerHyperparameter):
         return super().get_neighbors(
             value, rs, number=number, transform=transform, std=std
         )
-
-

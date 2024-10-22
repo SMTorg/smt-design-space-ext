@@ -6,7 +6,6 @@ Created on Tue Oct 22 15:50:49 2024
 @author: psaves
 """
 
-
 from typing import List, Sequence, Tuple, Union
 
 import numpy as np
@@ -22,7 +21,6 @@ from smt_design_space_ext import (
     CategoricalVariable,
     BaseDesignSpace,
     DesignVariable,
-    DesignSpace,
 )
 
 try:
@@ -66,10 +64,15 @@ except ImportError:
     class UniformIntegerHyperparameter:
         pass
 
-from smt_design_space_ext  import BaseDesignSpace,FixedIntegerParam,NoDefaultConfigurationSpace
+
+from smt_design_space_ext import (
+    FixedIntegerParam,
+    NoDefaultConfigurationSpace,
+)
 
 
 VarValueType = Union[int, str, List[Union[int, str]]]
+
 
 def ensure_design_space(xt=None, xlimits=None, design_space=None) -> "BaseDesignSpace":
     """Interface to turn legacy input formats into a DesignSpace"""
@@ -83,7 +86,9 @@ def ensure_design_space(xt=None, xlimits=None, design_space=None) -> "BaseDesign
         return ConfigSpaceDesignSpaceImpl(xlimits)
 
     if xt is not None:
-        return ConfigSpaceDesignSpaceImpl([[np.min(xt) - 0.99, np.max(xt) + 1e-4]] * xt.shape[1])
+        return ConfigSpaceDesignSpaceImpl(
+            [[np.min(xt) - 0.99, np.max(xt) + 1e-4]] * xt.shape[1]
+        )
 
     raise ValueError("Nothing defined that could be interpreted as a design space!")
 

@@ -14,23 +14,23 @@ from smt_design_space_ext.design_space import (
     HAS_CONFIG_SPACE,
     HAS_ADSG,
 )
-from smt_design_space_ext.cs_ds_imp import ConfigSpaceDesignSpaceImpl 
+from smt_design_space_ext.cs_ds_imp import ConfigSpaceDesignSpaceImpl
 
-from smt_design_space_ext.adsg_ds_imp import AdsgDesignSpaceImpl 
+from smt_design_space_ext.adsg_ds_imp import AdsgDesignSpaceImpl
 
 __all__ = [
-    "__version__", 
+    "__version__",
     "DesignSpace",
-    "FloatVariable", 
-    "IntegerVariable", 
-    "OrdinalVariable", 
-    "CategoricalVariable", 
-    "BaseDesignSpace", 
-    "DesignVariable", 
-    "NoDefaultConfigurationSpace", 
-    "FixedIntegerParam", 
-    "HAS_CONFIG_SPACE", 
+    "FloatVariable",
+    "IntegerVariable",
+    "OrdinalVariable",
+    "CategoricalVariable",
+    "BaseDesignSpace",
+    "DesignVariable",
+    "NoDefaultConfigurationSpace",
+    "FixedIntegerParam",
+    "HAS_CONFIG_SPACE",
     "HAS_ADSG",
-    "ConfigSpaceDesignSpaceImpl", 
-    "AdsgDesignSpaceImpl"
+    "ConfigSpaceDesignSpaceImpl",
+    "AdsgDesignSpaceImpl",
 ]

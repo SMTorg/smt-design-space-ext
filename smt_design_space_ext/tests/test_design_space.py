@@ -12,7 +12,6 @@ from smt.sampling_methods import LHS
 from smt_design_space_ext import (
     HAS_CONFIG_SPACE,
     HAS_ADSG,
-    DesignSpace,
     AdsgDesignSpaceImpl,
     ConfigSpaceDesignSpaceImpl,
     BaseDesignSpace,
@@ -934,11 +933,15 @@ class Test(unittest.TestCase):
         self.assertEquals(
             len(design_space3._sample_valid_x(1, return_render=False)[0][0]), 13
         )
-    def test_smt(self) : 
+
+    def test_smt(self):
         from smt.applications.tests.test_mixed_integer import TestMixedInteger
-        test_smt_mi =  TestMixedInteger()
+
+        test_smt_mi = TestMixedInteger()
         test_smt_mi.run_mixed_cs_example()
         test_smt_mi.run_hierarchical_design_space_example()
         test_smt_mi.run_mixed_homo_gaussian_example()
+
+
 if __name__ == "__main__":
     unittest.main()

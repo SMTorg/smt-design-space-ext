@@ -6,12 +6,10 @@ Created on Tue Oct 22 15:50:49 2024
 @author: psaves
 """
 
-
-from typing import List, Sequence, Tuple, Union
+from typing import List, Tuple, Union
 
 import numpy as np
 
-from smt.sampling_methods import LHS
 
 # Here we import design space base classes from smt
 # We do not import smt.design_space as it would be circular!!!
@@ -21,8 +19,6 @@ from smt_design_space_ext import (
     OrdinalVariable,
     CategoricalVariable,
     BaseDesignSpace,
-    DesignVariable,
-    DesignSpace,
     ConfigSpaceDesignSpaceImpl,
 )
 
@@ -67,8 +63,6 @@ except ImportError:
     class UniformIntegerHyperparameter:
         pass
 
-from smt_design_space_ext  import  BaseDesignSpace,DesignSpace,FixedIntegerParam,NoDefaultConfigurationSpace
-
 
 VarValueType = Union[int, str, List[Union[int, str]]]
 
@@ -85,10 +79,11 @@ def ensure_design_space(xt=None, xlimits=None, design_space=None) -> "BaseDesign
         return ConfigSpaceDesignSpaceImpl(xlimits)
 
     if xt is not None:
-        return ConfigSpaceDesignSpaceImpl([[np.min(xt) - 0.99, np.max(xt) + 1e-4]] * xt.shape[1])
+        return ConfigSpaceDesignSpaceImpl(
+            [[np.min(xt) - 0.99, np.max(xt) + 1e-4]] * xt.shape[1]
+        )
 
     raise ValueError("Nothing defined that could be interpreted as a design space!")
-
 
 
 def _convert_adsg_to_legacy(adsg) -> "BaseDesignSpace":
@@ -164,26 +159,26 @@ def _convert_adsg_to_legacy(adsg) -> "BaseDesignSpace":
         )
 
     edges = np.array(list(adsg._graph.edges.data()))
-    if len(edges) > 0 :
+    if len(edges) > 0:
         edgestype = [edge["type"] for edge in edges[:, 2]]
         incomp_nodes = []
         for i, edge in enumerate(edges):
             if edgestype[i] == EdgeType.INCOMPATIBILITY:
                 incomp_nodes.append([edges[i][0], edges[i][1]])
-    
+
         def remove_symmetry(lst):
             unique_pairs = set()
-    
+
             for pair in lst:
                 # Sort the pair based on the _id attribute of NamedNode
                 sorted_pair = tuple(sorted(pair, key=lambda node: node._id))
                 unique_pairs.add(sorted_pair)
-    
+
             # Convert set of tuples back to list of lists if needed
             return [list(pair) for pair in unique_pairs]
-    
+
         incomp_nodes = remove_symmetry(incomp_nodes)
-    
+
         for pair in incomp_nodes:
             node1, node2 = pair
             vars1 = next(iter(adsg._graph.predecessors(node1)))
@@ -325,6 +320,7 @@ def _legacy_to_adsg(legacy_ds: "ConfigSpaceDesignSpaceImpl") -> "BasicADSG":
                     adsg.add_incompatibility_constraint([value_node1, value_node2])
     adsg = adsg.set_start_nodes(start_nodes)
     return adsg
+
 
 class AdsgDesignSpaceImpl(BaseDesignSpace):
     """ """
@@ -485,4 +481,3 @@ class AdsgDesignSpaceImpl(BaseDesignSpace):
     def _is_conditionally_acting(self) -> np.ndarray:
         # Decreed variables are the conditionally acting variables
         return np.array(self.graph_proc.dv_is_conditionally_active)
-
