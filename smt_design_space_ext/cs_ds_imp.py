@@ -21,48 +21,28 @@ from smt_design_space_ext import (
     CategoricalVariable,
     BaseDesignSpace,
     DesignVariable,
+    HAS_ADSG,
+    HAS_CONFIG_SPACE,
 )
 
-try:
-    from ConfigSpace import (
-        CategoricalHyperparameter,
-        Configuration,
-        ConfigurationSpace,
-        EqualsCondition,
-        ForbiddenAndConjunction,
-        ForbiddenEqualsClause,
-        ForbiddenInClause,
-        ForbiddenLessThanRelation,
-        InCondition,
-        OrdinalHyperparameter,
-        UniformFloatHyperparameter,
-        UniformIntegerHyperparameter,
-    )
-    from ConfigSpace.exceptions import ForbiddenValueError
-    from ConfigSpace.util import get_random_neighbor
+from ConfigSpace import (
+    CategoricalHyperparameter,
+    Configuration,
+    EqualsCondition,
+    ForbiddenAndConjunction,
+    ForbiddenEqualsClause,
+    ForbiddenInClause,
+    ForbiddenLessThanRelation,
+    InCondition,
+    OrdinalHyperparameter,
+    UniformFloatHyperparameter,
+    UniformIntegerHyperparameter,
+)
+from ConfigSpace.exceptions import ForbiddenValueError
+from ConfigSpace.util import get_random_neighbor
 
-    HAS_CONFIG_SPACE = True
-
-except ImportError:
-    HAS_CONFIG_SPACE = False
-try:
-    from adsg_core.graph.graph_edges import EdgeType
-    from adsg_core import GraphProcessor, SelectionChoiceNode
+if HAS_ADSG:
     from adsg_core.graph.adsg import ADSG
-    from adsg_core import BasicADSG, NamedNode, DesignVariableNode
-
-    HAS_ADSG = True
-except ImportError:
-    HAS_ADSG = False
-
-    class Configuration:
-        pass
-
-    class ConfigurationSpace:
-        pass
-
-    class UniformIntegerHyperparameter:
-        pass
 
 
 from smt_design_space_ext import (

@@ -1,7 +1,6 @@
 from .version import __version__
 
-# Symbols imported in smt to handle hierarchical variables
-from smt_design_space_ext.design_space import (
+from smt.design_space import (
     DesignSpace,
     FloatVariable,
     IntegerVariable,
@@ -9,6 +8,10 @@ from smt_design_space_ext.design_space import (
     CategoricalVariable,
     BaseDesignSpace,
     DesignVariable,
+)
+
+# Symbols imported in smt to handle hierarchical variables
+from smt_design_space_ext.design_space import (
     NoDefaultConfigurationSpace,
     FixedIntegerParam,
     HAS_CONFIG_SPACE,

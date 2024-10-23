@@ -15,38 +15,18 @@ from smt.design_space import (
     BaseDesignSpace,
     DesignSpace,
 )
+import importlib
 
-try:
+spec_cs = importlib.util.find_spec("ConfigSpace")
+if spec_cs:
+    HAS_CONFIG_SPACE = True
     from ConfigSpace import (
-        CategoricalHyperparameter,
         Configuration,
         ConfigurationSpace,
-        EqualsCondition,
-        ForbiddenAndConjunction,
-        ForbiddenEqualsClause,
-        ForbiddenInClause,
-        ForbiddenLessThanRelation,
-        InCondition,
-        OrdinalHyperparameter,
-        UniformFloatHyperparameter,
         UniformIntegerHyperparameter,
     )
-    from ConfigSpace.exceptions import ForbiddenValueError
-    from ConfigSpace.util import get_random_neighbor
-
-    HAS_CONFIG_SPACE = True
-
-except ImportError:
+else:
     HAS_CONFIG_SPACE = False
-try:
-    from adsg_core.graph.graph_edges import EdgeType
-    from adsg_core import GraphProcessor, SelectionChoiceNode
-    from adsg_core.graph.adsg import ADSG
-    from adsg_core import BasicADSG, NamedNode, DesignVariableNode
-
-    HAS_ADSG = True
-except ImportError:
-    HAS_ADSG = False
 
     class Configuration:
         pass
@@ -56,6 +36,14 @@ except ImportError:
 
     class UniformIntegerHyperparameter:
         pass
+
+
+spec_adsg = importlib.util.find_spec("adsg_core")
+if spec_adsg:
+    HAS_ADSG = True
+    from adsg_core import ADSG
+else:
+    HAS_ADSG = False
 
 
 def ensure_design_space(xt=None, xlimits=None, design_space=None) -> "BaseDesignSpace":
