@@ -935,7 +935,7 @@ class Test(unittest.TestCase):
         )
 
     def test_smt(self):
-        from smt.applications.tests.test_mixed_integer import TestMixedInteger
+        from smt.applications import TestMixedInteger
 
         test_smt_mi = TestMixedInteger()
         test_smt_mi.run_mixed_cs_example()
