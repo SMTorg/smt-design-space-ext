@@ -1,4 +1,4 @@
-smt @ git+https://github.com/Paul-Saves/smt@master
+smt==2.8.0
 ConfigSpace==0.6.1 
 adsg-core==1.1.1
 pytest     # tests runner
