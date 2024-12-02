@@ -30,6 +30,8 @@ jobs:
         pip install -r requirements.txt 
         pip list
         pip install -e .
+        pip uninstall smt
+        pip install git+https://github.com/Paul-Saves/smt
 
     - name: Check with ruff
       run: |
