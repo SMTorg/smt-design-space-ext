@@ -27,11 +27,10 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install git+https://github.com/Paul-Saves/smt
+        pip install git+https://github.com/SMTorg/smt
         pip install -r requirements.txt 
         pip list
         pip install -e .
-        pip install git+https://github.com/Paul-Saves/smt
 
     - name: Check with ruff
       run: |
