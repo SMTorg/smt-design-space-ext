@@ -430,6 +430,7 @@ class AdsgDesignSpaceImpl(BaseDesignSpace):
         Fill the activeness matrix (n x nx) and if needed correct design vectors (n x nx) that are partially inactive.
         Imputation of inactive variables is handled automatically.
         """
+        x = np.atleast_2d(x)
         is_discrete_mask = self.is_cat_mask
         is_active = np.copy(x)
         for i, xi in enumerate(x):
