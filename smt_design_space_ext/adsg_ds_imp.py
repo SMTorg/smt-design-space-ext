@@ -205,9 +205,18 @@ def _legacy_to_adsg(legacy_ds: "ConfigSpaceDesignSpaceImpl") -> "BasicADSG":
     value_nodes = {}  # This will store decreed value nodes
     start_nodes = set()
     for i, var in enumerate(legacy_ds._design_variables):
-        if isinstance(var, FloatVariable) or isinstance(var, IntegerVariable):
+        if isinstance(var, FloatVariable):
             # Create a DesignVariableNode with bounds for continuous variables
             var_node = DesignVariableNode(f"x{i}", bounds=(var.lower, var.upper))
+        elif isinstance(var, IntegerVariable):
+            # Create a SelectionChoiceNode for ordinal variables (ordinal treated like categorical)
+            var_node = NamedNode(f"x{i}")
+            valuesord = list(range(var.lower, var.upper + 1))
+            choices = [NamedNode(value) for value in valuesord]
+            value_nodes[f"x{i}"] = (
+                choices  # Store decreed value nodes for this variable
+            )
+            adsg.add_selection_choice(f"choice_x{i}", var_node, choices)
         elif isinstance(var, CategoricalVariable):
             # Create a SelectionChoiceNode for categorical variables
             var_node = NamedNode(f"x{i}")
