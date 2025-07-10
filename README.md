@@ -44,6 +44,9 @@ The paper provides a comprehensive survey and introduces a unified graph-based m
 pip install smt-design-space-ext
 ```
 https://pypi.org/project/smt-design-space-ext/
+
+Requirements. See [Requirements](Requirements.txt) for details.
+
 ---
 
 ## 🚀 Quick Start Example
