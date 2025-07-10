@@ -45,7 +45,7 @@ pip install smt-design-space-ext
 ```
 https://pypi.org/project/smt-design-space-ext/
 
-Requirements. See [Requirements](Requirements.txt) for details.
+Requirements. See [Requirements](requirements.txt) for details.
 
 ---
 
