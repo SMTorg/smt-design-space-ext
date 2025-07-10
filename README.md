@@ -10,7 +10,7 @@ This package is an extension to the SMT (Surrogate Modeling Toolbox), offering a
 ## 🔍 What It Does
 
 - **Hierarchical variables**: Support for nested conditional variables (e.g., a rotor configuration branch that only activates when `use_rotor = yes`).
-- **Mixed types**: Handles continuous, integer, categorical, meta and indicator variables uniformly.
+- **Mixed types**: Handles continuous, integer or categorical variables uniformly.
 - **Conditional activation**: Meta-variables powerfully control lower-level variable activation based on context.
 - **Graph-based design space representation**: Clean and intuitive implementation of complex, branching designs.
 - **Extensible subtress**: Easily add new types or layers of conditional logic.
@@ -43,27 +43,38 @@ The paper provides a comprehensive survey and introduces a unified graph-based m
 ```bash
 pip install smt-design-space-ext
 ```
-
+https://pypi.org/project/smt-design-space-ext/
 ---
 
 ## 🚀 Quick Start Example
 
 ```python
-from smt_design_space import DesignSpace
+from smt_design_space_ext import (
+    HAS_CONFIG_SPACE,
+    HAS_ADSG,
+    AdsgDesignSpaceImpl,
+    ConfigSpaceDesignSpaceImpl,
+    BaseDesignSpace,
+    CategoricalVariable,
+    FloatVariable,
+    IntegerVariable,
+    OrdinalVariable,
+)
 
-ds = DesignSpace()
-# Meta-variable to enable feature branching
-ds.add_categorical("enable_feature", ["yes", "no"])
-# Feature type only active if enabled
-ds.add_meta("feature_type",
-            parent="enable_feature",
-            active_if="yes",
-            values=["typeA", "typeB"])
-# Parameter only active in typeA branch
-ds.add_numeric("featureA_param",
-               parent="feature_type",
-               active_if="typeA",
-               bounds=(0.0, 1.0))
+ ds = ConfigSpaceDesignSpaceImpl(
+            [
+                CategoricalVariable(["A", "B", "C"]),  # x0
+                CategoricalVariable(["E", "F"]),  # x1
+                IntegerVariable(0, 1),  # x2
+                FloatVariable(0.1, 1),  # x3
+            ],
+            random_state=42,
+        )
+        ds.declare_decreed_var(
+            decreed_var=3, meta_var=0, meta_value="A"
+        )  # Activate x3 if x0 == A
+
+
 ```
 
 This dynamically builds a tree-like structure of variables, enabling clear and constrained space exploration.
@@ -72,9 +83,9 @@ This dynamically builds a tree-like structure of variables, enabling clear and c
 
 ## 🧩 Integration
 
-- Integrates readily with SMT’s Kriging and PyKriging modules.
-- Compatible with Bayesian, evolutionary, or gradient‑based optimizers.
-- Prepare space definitions for use with graph neural networks or surrogate modeling pipelines.
+- Integrates readily with SMT’s Kriging modules.
+- Compatible with Bayesian or gradient‑based optimizers.
+- Prepare space definitions for use with surrogate modeling pipelines.
 
 ---
 
