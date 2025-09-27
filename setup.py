@@ -21,9 +21,9 @@ setup(
     description="SMT design space extension for hierarchical variables handling",
     install_requires=[
         "numpy",
-        "smt>=2.8",
+        "smt>=2.9",
         "ConfigSpace==0.6.1",
-        "adsg-core==1.1.1",
+        "adsg-core==1.2.0",
     ],
     maintainer="Paul Saves",
     maintainer_email="paul.saves@onera.fr",
