@@ -1,4 +1,4 @@
-smt==2.9.4
+smt>=2.10
 scipy==1.13.1
 ConfigSpace>=1.2.0
 adsg-core==1.2.0
