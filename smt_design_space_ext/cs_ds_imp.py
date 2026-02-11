@@ -147,7 +147,7 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
     def __init__(
         self,
         design_variables: Union[List[DesignVariable], list, np.ndarray],
-        random_state=None,
+        seed=None,
     ):
         self.sampler = None
 
@@ -172,8 +172,6 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
                 converted_dvs.append(FloatVariable(bounds[0], bounds[1]))
             design_variables = converted_dvs
 
-        self.random_state = random_state  # For testing
-        seed = self.random_state
         self._cs = None
         self._cs_cate = None
         if HAS_CONFIG_SPACE:
@@ -214,18 +212,20 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
 
                 else:
                     raise ValueError(f"Unknown variable type: {dv!r}")
-            seed = self._to_seed(random_state)
 
-            self._cs = NoDefaultConfigurationSpace(space=cs_vars, seed=seed)
+            cs_seed = seed if isinstance(seed, (int, np.integer)) else None
+            self._cs = NoDefaultConfigurationSpace(space=cs_vars, seed=cs_seed)
             ## Fix to make constraints work correctly with either IntegerVariable or OrdinalVariable
             ## ConfigSpace is malfunctioning
-            self._cs_cate = NoDefaultConfigurationSpace(space=cs_vars_cate, seed=seed)
+            self._cs_cate = NoDefaultConfigurationSpace(
+                space=cs_vars_cate, seed=cs_seed
+            )
 
         # dict[int, dict[any, list[int]]]: {meta_var_idx: {value: [decreed_var_idx, ...], ...}, ...}
         self._meta_vars = {}
         self._is_decreed = np.zeros((len(design_variables),), dtype=bool)
 
-        super().__init__(design_variables=design_variables, random_state=random_state)
+        super().__init__(design_variables=design_variables, seed=seed)
 
     def declare_decreed_var(
         self, decreed_var: int, meta_var: int, meta_value: VarValueType
@@ -432,9 +432,7 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
         See _cs_var_idx. This function returns the opposite mapping: the positions of our design variables for each
         param.
         """
-        return np.array(
-            [int(param[1:]) for param in self._cs.keys()]
-        )
+        return np.array([int(param[1:]) for param in self._cs.keys()])
 
     def _is_conditionally_acting(self) -> np.ndarray:
         # Decreed variables are the conditionally acting variables
@@ -494,26 +492,17 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
             return int(self.seed)
         return 0
 
-    def _sample_valid_x(
-        self, n: int, random_state=None, seed=None
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    def _sample_valid_x(self, n: int, seed=None) -> Tuple[np.ndarray, np.ndarray]:
         """Sample design vectors"""
         # Simplified implementation: sample design vectors in unfolded space
         x_limits_unfolded = self.get_unfolded_num_bounds()
-        if self.random_state is None:
-            self.random_state = random_state
 
         if self._cs is not None:
             # Sample Configuration objects
-            if self.seed is None:
-                seed = self._to_seed(random_state)
-                self.seed = seed
             # ConfigSpace 1.x seed() expects an int, but smt base class
             # sets self.seed to a np.random.Generator object
             cs_seed = self._get_int_seed()
             self._cs.seed(cs_seed)
-            if isinstance(self.seed, (int, np.integer)):
-                self.seed += 1
             configs = self._cs.sample_configuration(n)
             if n == 1:
                 configs = [configs]
@@ -524,7 +513,7 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
             if self.sampler is None:
                 self.sampler = LHS(
                     xlimits=x_limits_unfolded,
-                    random_state=random_state,
+                    seed=seed if seed is not None else self.seed,
                     criterion="ese",
                 )
             x = self.sampler(n)
@@ -559,18 +548,12 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
             indvec = 0
             for hp in self._cs_cate:
                 if (
-                    (str(self._cs[hp]).split()[2])
-                    == "UniformInteger,"
-                    and (
-                        str(self._cs_cate[hp]).split()[2][:3]
-                    )
-                    == "Cat"
+                    (str(self._cs[hp]).split()[2]) == "UniformInteger,"
+                    and (str(self._cs_cate[hp]).split()[2][:3]) == "Cat"
                     and not (np.isnan(vector2[indvec]))
                 ):
                     vector2[indvec] = int(vector2[indvec]) - int(
-                        str(self._cs_cate[hp]).split()[4][
-                            1:-1
-                        ]
+                        str(self._cs_cate[hp]).split()[4][1:-1]
                     )
                 indvec += 1
             self._normalize_x_no_integer(np.atleast_2d(vector2))
@@ -582,9 +565,9 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
                 indvec = 0
                 vector2 = np.copy(vector)
                 for hp in self._cs_cate:
-                    if (
-                        str(self._cs_cate[hp]).split()[2][:3]
-                    ) == "Cat" and not (np.isnan(vector2[indvec])):
+                    if (str(self._cs_cate[hp]).split()[2][:3]) == "Cat" and not (
+                        np.isnan(vector2[indvec])
+                    ):
                         vector2[indvec] = int(vector2[indvec])
                     indvec += 1
 
@@ -666,9 +649,7 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
 
                 if cs_normalize:
                     # Normalize between 0 and 1, matching ConfigSpace 1.x normalization
-                    x[:, i] = (x[:, i] - dv.lower) / max(
-                        dv.upper - dv.lower, 1
-                    )
+                    x[:, i] = (x[:, i] - dv.lower) / max(dv.upper - dv.lower, 1)
 
     def _normalize_x_no_integer(self, x: np.ndarray, cs_normalize=True):
         ordereddesign_variables = [
@@ -694,9 +675,7 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
 
             elif isinstance(dv, IntegerVariable):
                 # Denormalize matching ConfigSpace 1.x normalization
-                x[:, i] = np.round(
-                    x[:, i] * (dv.upper - dv.lower) + dv.lower
-                )
+                x[:, i] = np.round(x[:, i] * (dv.upper - dv.lower) + dv.lower)
 
     def _cs_denormalize_x_ordered(self, x: np.ndarray):
         ordereddesign_variables = [
@@ -708,9 +687,7 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
 
             elif isinstance(dv, IntegerVariable):
                 # Denormalize matching ConfigSpace 1.x normalization
-                x[:, i] = np.round(
-                    x[:, i] * (dv.upper - dv.lower) + dv.lower
-                )
+                x[:, i] = np.round(x[:, i] * (dv.upper - dv.lower) + dv.lower)
 
     def __str__(self):
         dvs = "\n".join([f"x{i}: {dv!s}" for i, dv in enumerate(self.design_variables)])

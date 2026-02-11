@@ -305,16 +305,14 @@ class AdsgDesignSpaceImpl(BaseDesignSpace):
         self,
         adsg=None,
         design_variables=None,
-        random_state=None,
+        seed=None,
     ):
-        self.random_state = random_state  # For testing
-        seed = self._to_seed(random_state)
         if adsg is not None:
             self.adsg = adsg
         elif design_variables is not None:
             # to do
             self.ds_leg = ConfigSpaceDesignSpaceImpl(
-                design_variables=design_variables, random_state=seed
+                design_variables=design_variables, seed=seed
             )
             self.adsg = _legacy_to_adsg(self.ds_leg)
             pass
@@ -330,7 +328,7 @@ class AdsgDesignSpaceImpl(BaseDesignSpace):
 
         design_space = ensure_design_space(design_space=self.adsg)
         self._design_variables = design_space.design_variables
-        super().__init__(design_variables=self._design_variables, random_state=seed)
+        super().__init__(design_variables=self._design_variables, seed=seed)
         self._cs = design_space._cs
         self._cs_cate = design_space._cs_cate
         self._is_decreed = design_space._is_decreed
@@ -394,7 +392,7 @@ class AdsgDesignSpaceImpl(BaseDesignSpace):
     def _sample_valid_x(
         self,
         n: int,
-        random_state=None,
+        seed=None,
         return_render=False,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Sample design vectors"""

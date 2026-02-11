@@ -1,4 +1,4 @@
-"""
+﻿"""
 Author: Jasper Bussemaker <jasper.bussemaker@dlr.de>
 """
 
@@ -192,14 +192,14 @@ class Test(unittest.TestCase):
                 IntegerVariable(-1, 2),
                 FloatVariable(0.5, 1.5),
             ],
-            random_state=42,
+            seed=42,
         )
         self.assertEqual(len(ds.design_variables), 4)
         if HAS_CONFIG_SPACE:
             self.assertEqual(len(list(ds._cs.values())), 4)
         self.assertTrue(np.all(~ds.is_conditionally_acting))
         if HAS_CONFIG_SPACE:
-            x, is_acting = ds.sample_valid_x(3, random_state=42)
+            x, is_acting = ds.sample_valid_x(3, seed=42)
             self.assertEqual(x.shape, (3, 4))
             np.testing.assert_allclose(
                 x,
@@ -213,7 +213,7 @@ class Test(unittest.TestCase):
                 atol=1e-6,
             )
         else:
-            ds.sample_valid_x(3, random_state=42)
+            ds.sample_valid_x(3, seed=42)
             x = np.array(
                 [
                     [1, 0, 0, 0.834],
@@ -247,7 +247,7 @@ class Test(unittest.TestCase):
         self.assertTrue(np.all(is_act_corr == is_acting))
 
         x_sampled_externally = LHS(
-            xlimits=ds.get_unfolded_num_bounds(), criterion="ese", random_state=42
+            xlimits=ds.get_unfolded_num_bounds(), criterion="ese", seed=42
         )(3)
         x_corr, is_acting_corr = ds.correct_get_acting(x_sampled_externally)
         x_corr, is_acting_corr = ds.fold_x(x_corr, is_acting_corr)
@@ -265,7 +265,7 @@ class Test(unittest.TestCase):
         self.assertTrue(np.all(is_acting_corr))
 
         x_unfolded, is_acting_unfolded = ds.sample_valid_x(
-            3, unfolded=True, random_state=42
+            3, unfolded=True, seed=42
         )
         self.assertEqual(x_unfolded.shape, (3, 6))
         if HAS_CONFIG_SPACE:
@@ -334,7 +334,7 @@ class Test(unittest.TestCase):
                 IntegerVariable(0, 1),  # x2
                 FloatVariable(0.1, 1),  # x3
             ],
-            random_state=42,
+            seed=42,
         )
         ds.declare_decreed_var(
             decreed_var=3, meta_var=0, meta_value="A"
@@ -399,7 +399,7 @@ class Test(unittest.TestCase):
             ),
         )
 
-        x_sampled, is_acting_sampled = ds.sample_valid_x(100, random_state=42)
+        x_sampled, is_acting_sampled = ds.sample_valid_x(100, seed=42)
         assert x_sampled.shape == (100, 4)
         x_sampled[is_acting_sampled[:, 3], 3] = np.round(
             x_sampled[is_acting_sampled[:, 3], 3], 4
@@ -431,7 +431,7 @@ class Test(unittest.TestCase):
                 IntegerVariable(0, 1),  # x2
                 FloatVariable(0, 1),  # x3
             ],
-            random_state=42,
+            seed=42,
         )
         ds.declare_decreed_var(
             decreed_var=3, meta_var=0, meta_value="A"
@@ -495,7 +495,7 @@ class Test(unittest.TestCase):
             ),
         )
 
-        x_sampled, is_acting_sampled = ds.sample_valid_x(100, random_state=42)
+        x_sampled, is_acting_sampled = ds.sample_valid_x(100, seed=42)
         assert x_sampled.shape == (100, 4)
         x_sampled[is_acting_sampled[:, 3], 3] = np.round(
             x_sampled[is_acting_sampled[:, 3], 3]
@@ -523,7 +523,7 @@ class Test(unittest.TestCase):
                 FloatVariable(0, 1),  # x1
                 FloatVariable(0, 1),  # x2
             ],
-            random_state=42,
+            seed=42,
         )
         ds.add_value_constraint(
             var1=0, value1="<", var2=1, value2=">"
@@ -533,7 +533,7 @@ class Test(unittest.TestCase):
         )  # Prevent x1 < x2
 
         # correct_get_acting
-        x_sampled, is_acting_sampled = ds.sample_valid_x(100, random_state=42)
+        x_sampled, is_acting_sampled = ds.sample_valid_x(100, seed=42)
         self.assertTrue(np.min(x_sampled[:, 0] - x_sampled[:, 1]) > 0)
         self.assertTrue(np.min(x_sampled[:, 1] - x_sampled[:, 2]) > 0)
         ds = ConfigSpaceDesignSpaceImpl(
@@ -542,7 +542,7 @@ class Test(unittest.TestCase):
                 FloatVariable(0, 2),  # x1
                 IntegerVariable(0, 2),  # x2
             ],
-            random_state=42,
+            seed=42,
         )
         ds.add_value_constraint(
             var1=0, value1="<", var2=1, value2=">"
@@ -552,7 +552,7 @@ class Test(unittest.TestCase):
         )  # Prevent x0 < x1
 
         # correct_get_acting
-        x_sampled, is_acting_sampled = ds.sample_valid_x(100, random_state=42)
+        x_sampled, is_acting_sampled = ds.sample_valid_x(100, seed=42)
         self.assertTrue(np.min(x_sampled[:, 0] - x_sampled[:, 1]) > 0)
         self.assertTrue(np.min(x_sampled[:, 1] - x_sampled[:, 2]) > 0)
 
@@ -571,12 +571,12 @@ class Test(unittest.TestCase):
                 IntegerVariable(0, 1),  # x2
                 FloatVariable(0, 1),  # x3
             ],
-            random_state=42,
+            seed=42,
         )
         ds.declare_decreed_var(
             decreed_var=3, meta_var=0, meta_value="A"
         )  # Activate x3 if x0 == A
-        self.assertRaises(RuntimeError, lambda: ds.sample_valid_x(10, random_state=42))
+        self.assertRaises(RuntimeError, lambda: ds.sample_valid_x(10, seed=42))
 
     def test_check_conditionally_acting_2(self):
         ds = ConfigSpaceDesignSpaceImpl(
@@ -586,13 +586,13 @@ class Test(unittest.TestCase):
                 IntegerVariable(0, 1),  # x2
                 FloatVariable(0, 1),  # x3
             ],
-            random_state=42,
+            seed=42,
         )
         ds.declare_decreed_var(
             decreed_var=0, meta_var=1, meta_value="E"
         )  # Activate x3 if x0 == A
 
-        ds.sample_valid_x(10, random_state=42)
+        ds.sample_valid_x(10, seed=42)
 
     @unittest.skipIf(
         not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
@@ -607,7 +607,7 @@ class Test(unittest.TestCase):
         assert list(ds._cs.values())[0].default_value == "0"
 
         ds.add_value_constraint(var1=0, value1="1", var2=1, value2="1")
-        ds.sample_valid_x(100, random_state=42)
+        ds.sample_valid_x(100, seed=42)
 
         x_cartesian = np.array(list(itertools.product([0, 1, 2], [0, 1, 2])))
         x_cartesian2, _ = ds.correct_get_acting(x_cartesian)
@@ -631,7 +631,7 @@ class Test(unittest.TestCase):
         assert list(ds._cs.values())[0].default_value == 1
 
         ds.add_value_constraint(var1=0, value1=1, var2=1, value2=1)
-        ds.sample_valid_x(100, random_state=42)
+        ds.sample_valid_x(100, seed=42)
 
         x_cartesian = np.array(list(itertools.product([0, 1, 2], [0, 1, 2])))
         ds.correct_get_acting(x_cartesian)
@@ -656,7 +656,7 @@ class Test(unittest.TestCase):
         assert list(ds._cs.values())[0].default_value == "a"
 
         ds.add_value_constraint(var1=0, value1="b", var2=1, value2="b")
-        ds.sample_valid_x(100, random_state=42)
+        ds.sample_valid_x(100, seed=42)
 
         x_cartesian = np.array(list(itertools.product([0, 1, 2], [0, 1, 2])))
         ds.correct_get_acting(x_cartesian)
