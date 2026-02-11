@@ -21,16 +21,16 @@ setup(
     description="SMT design space extension for hierarchical variables handling",
     install_requires=[
         "numpy",
-        "smt>=2.10",
-        "ConfigSpace>=1.2.0",
-        "adsg-core==1.2.0",
+        "smt~=2.10",
+        "ConfigSpace~=1.2.0",
+        "adsg-core~=1.2.0",
     ],
     maintainer="Paul Saves",
     maintainer_email="paul.saves@onera.fr",
     packages=[
         "smt_design_space_ext",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.10",
     url="https://github.com/SMTorg/smt-design-space",  # use the URL to the github repo
     download_url="https://github.com/SMTorg/smt-design-space/releases",
 )

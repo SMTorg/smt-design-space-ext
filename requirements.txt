@@ -1,7 +1,7 @@
-smt>=2.10
-scipy==1.13.1
-ConfigSpace>=1.2.0
-adsg-core==1.2.0
+smt~=2.10
+scipy~=1.13.1
+ConfigSpace~=1.2.0
+adsg-core~=1.2.0
 pytest     # tests runner
 pytest-cov # allows to get coverage report
 ruff       # format and lint code
