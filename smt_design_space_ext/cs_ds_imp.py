@@ -225,7 +225,7 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
         self._meta_vars = {}
         self._is_decreed = np.zeros((len(design_variables),), dtype=bool)
 
-        super().__init__(design_variables=design_variables, random_state=seed)
+        super().__init__(design_variables=design_variables, random_state=random_state)
 
     def declare_decreed_var(
         self, decreed_var: int, meta_var: int, meta_value: VarValueType
@@ -257,7 +257,7 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
 
             ## Fix to make constraints work correctly with either IntegerVariable or OrdinalVariable
             ## ConfigSpace is malfunctioning
-            self._cs.add_condition(condition)
+            self._cs.add(condition)
             decreed_param = self._get_param2(decreed_var)
             meta_param = self._get_param2(meta_var)
             # Add a condition that checks for equality (if single value given) or in-collection (if sequence given)
@@ -282,7 +282,7 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
                 except ValueError:
                     condition = EqualsCondition(decreed_param, meta_param, meta_value)
 
-            self._cs_cate.add_condition(condition)
+            self._cs_cate.add(condition)
 
         # Simplified implementation
         else:
@@ -355,15 +355,15 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
                 clause2 = ForbiddenEqualsClause(param2, value2)
 
             constraint_clause = ForbiddenAndConjunction(clause1, clause2)
-            self._cs.add_forbidden_clause(constraint_clause)
+            self._cs.add(constraint_clause)
         else:
             if value1 in [">", "<"] and value2 in [">", "<"] and value1 != value2:
                 if value1 == "<":
                     constraint_clause = ForbiddenLessThanRelation(param1, param2)
-                    self._cs.add_forbidden_clause(constraint_clause)
+                    self._cs.add(constraint_clause)
                 else:
                     constraint_clause = ForbiddenLessThanRelation(param2, param1)
-                    self._cs.add_forbidden_clause(constraint_clause)
+                    self._cs.add(constraint_clause)
             else:
                 raise ValueError("Bad definition of DesignSpace.")
 
@@ -399,17 +399,17 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
                     clause2 = ForbiddenEqualsClause(param2, value2)
 
             constraint_clause = ForbiddenAndConjunction(clause1, clause2)
-            self._cs_cate.add_forbidden_clause(constraint_clause)
+            self._cs_cate.add(constraint_clause)
 
     def _get_param(self, idx):
         try:
-            return self._cs.get_hyperparameter(f"x{idx}")
+            return self._cs[f"x{idx}"]
         except KeyError:
             raise KeyError(f"Variable not found: {idx}")
 
     def _get_param2(self, idx):
         try:
-            return self._cs_cate.get_hyperparameter(f"x{idx}")
+            return self._cs_cate[f"x{idx}"]
         except KeyError:
             raise KeyError(f"Variable not found: {idx}")
 
@@ -421,7 +421,7 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
 
         This property contains the indices of the params in the ConfigurationSpace.
         """
-        names = self._cs.get_hyperparameter_names()
+        names = list(self._cs.keys())
         return np.array(
             [names.index(f"x{ix}") for ix in range(len(self.design_variables))]
         )
@@ -433,7 +433,7 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
         param.
         """
         return np.array(
-            [int(param[1:]) for param in self._cs.get_hyperparameter_names()]
+            [int(param[1:]) for param in self._cs.keys()]
         )
 
     def _is_conditionally_acting(self) -> np.ndarray:
@@ -479,8 +479,23 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
 
         return x_corr, is_acting
 
+    def _get_int_seed(self, vector=None):
+        """Convert self.seed to an int for ConfigSpace 1.x API calls.
+        If vector is provided, derive a deterministic seed from it for
+        reproducible forbidden-value neighbor generation.
+        """
+        if vector is not None:
+            # Deterministic seed based on vector content
+            finite_vals = vector[np.isfinite(vector)]
+            return abs(hash(tuple(finite_vals.tolist()))) % (2**31)
+        if isinstance(self.seed, np.random.Generator):
+            return int(self.seed.integers(0, 2**31))
+        elif self.seed is not None:
+            return int(self.seed)
+        return 0
+
     def _sample_valid_x(
-        self, n: int, random_state=None
+        self, n: int, random_state=None, seed=None
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Sample design vectors"""
         # Simplified implementation: sample design vectors in unfolded space
@@ -493,8 +508,11 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
             if self.seed is None:
                 seed = self._to_seed(random_state)
                 self.seed = seed
-            self._cs.seed(self.seed)
-            if self.seed is not None:
+            # ConfigSpace 1.x seed() expects an int, but smt base class
+            # sets self.seed to a np.random.Generator object
+            cs_seed = self._get_int_seed()
+            self._cs.seed(cs_seed)
+            if isinstance(self.seed, (int, np.integer)):
                 self.seed += 1
             configs = self._cs.sample_configuration(n)
             if n == 1:
@@ -517,85 +535,86 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
             return self.correct_get_acting(x)
 
     def _get_correct_config(self, vector: np.ndarray) -> Configuration:
+        # Determine active hyperparameters and set inactive ones to NaN
+        # This replaces the old workaround of catching check_valid_configuration errors
+        # https://github.com/automl/ConfigSpace/issues/253#issuecomment-1513216665
+        all_hp_names = list(self._cs.keys())
+        while True:
+            active_hps = self._cs.get_active_hyperparameters(vector)
+            changed = False
+            for i, name in enumerate(all_hp_names):
+                if name not in active_hps and not np.isnan(vector[i]):
+                    vector[i] = np.nan
+                    changed = True
+            if not changed:
+                break
+
         config = Configuration(self._cs, vector=vector)
 
-        # Unfortunately we cannot directly ask which parameters SHOULD be active
-        # https://github.com/automl/ConfigSpace/issues/253#issuecomment-1513216665
-        # Therefore, we temporarily fix it with a very dirty workaround: catch the error raised in check_configuration
-        # to find out which parameters should be inactive
-        while True:
-            try:
-                ## Fix to make constraints work correctly with either IntegerVariable or OrdinalVariable
-                ## ConfigSpace is malfunctioning
-                if self.isinteger and self.has_valcons_ord_int:
-                    vector2 = np.copy(vector)
-                    self._cs_denormalize_x_ordered(np.atleast_2d(vector2))
-                    indvec = 0
-                    for hp in self._cs_cate:
-                        if (
-                            (str(self._cs.get_hyperparameter(hp)).split()[2])
-                            == "UniformInteger,"
-                            and (
-                                str(self._cs_cate.get_hyperparameter(hp)).split()[2][:3]
-                            )
-                            == "Cat"
-                            and not (np.isnan(vector2[indvec]))
-                        ):
-                            vector2[indvec] = int(vector2[indvec]) - int(
-                                str(self._cs_cate.get_hyperparameter(hp)).split()[4][
-                                    1:-1
-                                ]
-                            )
-                        indvec += 1
-                    self._normalize_x_no_integer(np.atleast_2d(vector2))
-                    config2 = Configuration(self._cs_cate, vector=vector2)
-                    config2.is_valid_configuration()
-
-                config.is_valid_configuration()
-                return config
-
-            except ValueError as e:
-                error_str = str(e)
-                if "Inactive hyperparameter" in error_str:
-                    # Deduce which parameter is inactive
-                    inactive_param_name = error_str.split("'")[1]
-                    param_idx = self._cs.get_idx_by_hyperparameter_name(
-                        inactive_param_name
+        ## Fix to make constraints work correctly with either IntegerVariable or OrdinalVariable
+        ## ConfigSpace is malfunctioning
+        if self.isinteger and self.has_valcons_ord_int:
+            vector2 = np.copy(vector)
+            self._cs_denormalize_x_ordered(np.atleast_2d(vector2))
+            indvec = 0
+            for hp in self._cs_cate:
+                if (
+                    (str(self._cs[hp]).split()[2])
+                    == "UniformInteger,"
+                    and (
+                        str(self._cs_cate[hp]).split()[2][:3]
                     )
+                    == "Cat"
+                    and not (np.isnan(vector2[indvec]))
+                ):
+                    vector2[indvec] = int(vector2[indvec]) - int(
+                        str(self._cs_cate[hp]).split()[4][
+                            1:-1
+                        ]
+                    )
+                indvec += 1
+            self._normalize_x_no_integer(np.atleast_2d(vector2))
 
-                    # Modify the vector and create a new Configuration
-                    vector = config.get_array().copy()
-                    vector[param_idx] = np.nan
-                    config = Configuration(self._cs, vector=vector)
+            try:
+                self._cs_cate._check_forbidden(vector2)
+            except ForbiddenValueError:
+                vector = config.get_array().copy()
+                indvec = 0
+                vector2 = np.copy(vector)
+                for hp in self._cs_cate:
+                    if (
+                        str(self._cs_cate[hp]).split()[2][:3]
+                    ) == "Cat" and not (np.isnan(vector2[indvec])):
+                        vector2[indvec] = int(vector2[indvec])
+                    indvec += 1
 
-                # At this point, the parameter active statuses are set correctly, so we only need to correct the
-                # configuration to one that does not violate the forbidden clauses
-                elif isinstance(e, ForbiddenValueError):
-                    if self.seed is None:
-                        seed = self._to_seed(self.random_state)
-                        self.seed = seed
-                    if not (self.has_valcons_ord_int):
-                        return get_random_neighbor(config, seed=self.seed)
+                config2 = Configuration(self._cs_cate, vector=vector2)
+                int_seed = self._get_int_seed(vector=vector)
+                config3 = get_random_neighbor(config2, seed=int_seed)
+                # Convert _cs_cate values to _cs values (categorical indices
+                # differ from integer HP vector normalization)
+                new_values = {}
+                for hp_name in dict(config3):
+                    hp_cs = self._cs[hp_name]
+                    value = config3[hp_name]
+                    if isinstance(hp_cs, UniformIntegerHyperparameter):
+                        new_values[hp_name] = int(value)
                     else:
-                        vector = config.get_array().copy()
-                        indvec = 0
-                        vector2 = np.copy(vector)
-                        ## Fix to make constraints work correctly with either IntegerVariable or OrdinalVariable
-                        ## ConfigSpace is malfunctioning
-                        for hp in self._cs_cate:
-                            if (
-                                str(self._cs_cate.get_hyperparameter(hp)).split()[2][:3]
-                            ) == "Cat" and not (np.isnan(vector2[indvec])):
-                                vector2[indvec] = int(vector2[indvec])
-                            indvec += 1
+                        new_values[hp_name] = value
+                config4 = Configuration(self._cs, values=new_values)
+                return config4
 
-                        config2 = Configuration(self._cs_cate, vector=vector2)
-                        config3 = get_random_neighbor(config2, seed=self.seed)
-                        vector3 = config3.get_array().copy()
-                        config4 = Configuration(self._cs, vector=vector3)
-                        return config4
-                else:
-                    raise
+        # Check forbidden clauses on the main config
+        try:
+            self._cs._check_forbidden(config.get_array())
+        except ForbiddenValueError:
+            int_seed = self._get_int_seed(vector=config.get_array())
+            if not (self.has_valcons_ord_int):
+                return get_random_neighbor(config, seed=int_seed)
+            else:
+                return get_random_neighbor(config, seed=int_seed)
+
+        return config
 
     def _configs_to_x(
         self, configs: List["Configuration"]
@@ -646,9 +665,9 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
                 x[:, i] = self._round_equally_distributed(x[:, i], dv.lower, dv.upper)
 
                 if cs_normalize:
-                    # After rounding, normalize between 0 and 1, where 0 and 1 represent the stretched bounds
-                    x[:, i] = (x[:, i] - dv.lower + 0.49999) / (
-                        dv.upper - dv.lower + 0.9999
+                    # Normalize between 0 and 1, matching ConfigSpace 1.x normalization
+                    x[:, i] = (x[:, i] - dv.lower) / max(
+                        dv.upper - dv.lower, 1
                     )
 
     def _normalize_x_no_integer(self, x: np.ndarray, cs_normalize=True):
@@ -674,9 +693,9 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
                 x[:, i] = x[:, i] * (dv.upper - dv.lower) + dv.lower
 
             elif isinstance(dv, IntegerVariable):
-                # Integer values are normalized similarly to what is done in _round_equally_distributed
+                # Denormalize matching ConfigSpace 1.x normalization
                 x[:, i] = np.round(
-                    x[:, i] * (dv.upper - dv.lower + 0.9999) + dv.lower - 0.49999
+                    x[:, i] * (dv.upper - dv.lower) + dv.lower
                 )
 
     def _cs_denormalize_x_ordered(self, x: np.ndarray):
@@ -688,9 +707,9 @@ class ConfigSpaceDesignSpaceImpl(BaseDesignSpace):
                 x[:, i] = x[:, i] * (dv.upper - dv.lower) + dv.lower
 
             elif isinstance(dv, IntegerVariable):
-                # Integer values are normalized similarly to what is done in _round_equally_distributed
+                # Denormalize matching ConfigSpace 1.x normalization
                 x[:, i] = np.round(
-                    x[:, i] * (dv.upper - dv.lower + 0.9999) + dv.lower - 0.49999
+                    x[:, i] * (dv.upper - dv.lower) + dv.lower
                 )
 
     def __str__(self):

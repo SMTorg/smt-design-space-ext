@@ -86,14 +86,34 @@ class FixedIntegerParam(UniformIntegerHyperparameter):
         std: float = 0.2,
     ) -> List[int]:
         # Temporary fix until https://github.com/automl/ConfigSpace/pull/313 is released
-        center = self._transform(value)
+        center = self.to_value(value)
         lower, upper = self.lower, self.upper
         if upper - lower - 1 < number:
             neighbors = sorted(set(range(lower, upper + 1)) - {center})
             if transform:
                 return neighbors
-            return self._inverse_transform(np.asarray(neighbors)).tolist()
+            return self.to_vector(np.asarray(neighbors)).tolist()
 
-        return super().get_neighbors(
-            value, rs, number=number, transform=transform, std=std
-        )
+        return list(self.neighbors_vectorized(value, number, std=std, seed=rs))
+
+    def neighbors_vectorized(self, vector, n, *, std=None, seed=None):
+        """Sample neighbors without ConfigSpace 1.x strict vector legality check.
+
+        ConfigSpace 1.x uses (x - lower) / (upper - lower) normalization while
+        this project uses a custom normalization. The base class rejects our
+        vectors as illegal, so we override to handle both formats.
+        """
+        center = self.to_value(vector)
+        lower, upper = self.lower, self.upper
+        all_neighbors = sorted(set(range(lower, upper + 1)) - {center})
+
+        if len(all_neighbors) == 0:
+            return np.array([], dtype=np.float64)
+
+        if len(all_neighbors) <= n:
+            return self.to_vector(np.asarray(all_neighbors))
+
+        rng = seed if seed is not None else np.random
+        chosen_idx = rng.choice(len(all_neighbors), size=n, replace=False)
+        chosen = [all_neighbors[int(i)] for i in chosen_idx]
+        return self.to_vector(np.asarray(chosen))

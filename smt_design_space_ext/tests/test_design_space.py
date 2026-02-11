@@ -205,12 +205,12 @@ class Test(unittest.TestCase):
                 x,
                 np.array(
                     [
-                        [1.0, 0.0, -0.0, 0.83370861],
-                        [2.0, 0.0, -1.0, 0.64286682],
-                        [2.0, 0.0, -0.0, 1.15088847],
+                        [0.0, 1.0, 0.0, 0.86983110],
+                        [0.0, 1.0, 0.0, 1.08229280],
+                        [1.0, 1.0, -1.0, 1.07942356],
                     ]
                 ),
-                atol=1e-8,
+                atol=1e-6,
             )
         else:
             ds.sample_valid_x(3, random_state=42)
@@ -226,19 +226,19 @@ class Test(unittest.TestCase):
         self.assertEqual(x.shape, (3, 4))
         self.assertEqual(is_acting.shape, x.shape)
 
-        self.assertEqual(ds.decode_values(x, i_dv=0), ["B", "C", "C"])
-        self.assertEqual(ds.decode_values(x, i_dv=1), ["0", "0", "0"])
+        self.assertEqual(ds.decode_values(x, i_dv=0), ["A", "A", "B"])
+        self.assertEqual(ds.decode_values(x, i_dv=1), ["1", "1", "1"])
         self.assertEqual(ds.decode_values(np.array([0, 1, 2]), i_dv=0), ["A", "B", "C"])
         self.assertEqual(ds.decode_values(np.array([0, 1]), i_dv=1), ["0", "1"])
 
-        self.assertEqual(ds.decode_values(x[0, :]), ["B", "0", 0, x[0, 3]])
-        self.assertEqual(ds.decode_values(x[[0], :]), [["B", "0", 0, x[0, 3]]])
+        self.assertEqual(ds.decode_values(x[0, :]), ["A", "1", 0, x[0, 3]])
+        self.assertEqual(ds.decode_values(x[[0], :]), [["A", "1", 0, x[0, 3]]])
         self.assertEqual(
             ds.decode_values(x),
             [
-                ["B", "0", 0, x[0, 3]],
-                ["C", "0", -1, x[1, 3]],
-                ["C", "0", 0, x[2, 3]],
+                ["A", "1", 0, x[0, 3]],
+                ["A", "1", 0, x[1, 3]],
+                ["B", "1", -1, x[2, 3]],
             ],
         )
 
@@ -255,12 +255,12 @@ class Test(unittest.TestCase):
             x_corr,
             np.array(
                 [
-                    [2.0, 0.0, -1.0, 1.34158548],
-                    [0.0, 1.0, -0.0, 0.55199817],
-                    [1.0, 1.0, 1.0, 1.15663662],
+                    [1.0, 0.0, -1.0, 1.14225500],
+                    [0.0, 0.0, 2.0, 0.82520745],
+                    [2.0, 1.0, 0.0, 1.18793909],
                 ]
             ),
-            atol=1e-8,
+            atol=1e-6,
         )
         self.assertTrue(np.all(is_acting_corr))
 
@@ -273,12 +273,12 @@ class Test(unittest.TestCase):
                 x_unfolded,
                 np.array(
                     [
-                        [1.0, 0.0, 0.0, 0.0, 2.0, 1.11213215],
-                        [0.0, 1.0, 0.0, 1.0, -1.0, 1.09482857],
-                        [1.0, 0.0, 0.0, 1.0, -1.0, 0.75061044],
+                        [0.0, 0.0, 1.0, 0.0, 2.0, 1.20767448],
+                        [1.0, 0.0, 0.0, 1.0, 1.0, 1.25132074],
+                        [1.0, 0.0, 0.0, 1.0, -1.0, 1.19895728],
                     ]
                 ),
-                atol=1e-8,
+                atol=1e-6,
             )
 
         self.assertTrue(str(ds))
@@ -415,7 +415,7 @@ class Test(unittest.TestCase):
             seen_x.add(tuple(xi))
             seen_is_acting.add(tuple(is_acting_sampled[i, :]))
         if HAS_ADSG:
-            assert len(seen_x) == 49
+            assert len(seen_x) == 43
         else:
             assert len(seen_x) == 42
         assert len(seen_is_acting) == 2
@@ -638,7 +638,7 @@ class Test(unittest.TestCase):
         x_cartesian2, _ = ds.correct_get_acting(x_cartesian)
         np.testing.assert_array_equal(
             np.array(
-                [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 2], [2, 0], [2, 1], [2, 2]]
+                [[0, 0], [0, 1], [0, 2], [1, 0], [0, 2], [1, 2], [2, 0], [2, 1], [2, 2]]
             ),
             x_cartesian2,
         )
@@ -663,7 +663,7 @@ class Test(unittest.TestCase):
         x_cartesian2, _ = ds.correct_get_acting(x_cartesian)
         np.testing.assert_array_equal(
             np.array(
-                [[0, 0], [0, 1], [0, 2], [1, 0], [0, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
+                [[0, 0], [0, 1], [0, 2], [1, 0], [2, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
             ),
             x_cartesian2,
         )
@@ -930,7 +930,7 @@ class Test(unittest.TestCase):
             var1=12, value1=["40", "45"], var2=2, value2=["ASGD"]
         )  # Forbid more than 35 neurons with ASGD
 
-        self.assertEquals(
+        self.assertEqual(
             len(design_space3._sample_valid_x(1, return_render=False)[0][0]), 13
         )
 

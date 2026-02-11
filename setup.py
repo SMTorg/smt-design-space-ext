@@ -22,7 +22,7 @@ setup(
     install_requires=[
         "numpy",
         "smt>=2.9",
-        "ConfigSpace==0.6.1",
+        "ConfigSpace>=1.2.0",
         "adsg-core==1.2.0",
     ],
     maintainer="Paul Saves",
