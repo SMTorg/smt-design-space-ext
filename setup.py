@@ -23,7 +23,7 @@ setup(
         "numpy",
         "smt~=2.10",
         "ConfigSpace~=1.2.0",
-        "adsg-core~=1.2.0",
+        "adsg-core~=1.4.0",
     ],
     maintainer="Paul Saves",
     maintainer_email="paul.saves@onera.fr",
