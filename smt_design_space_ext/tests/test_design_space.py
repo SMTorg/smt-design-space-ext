@@ -1,4 +1,4 @@
-﻿"""
+"""
 Author: Jasper Bussemaker <jasper.bussemaker@dlr.de>
 """
 
@@ -6,20 +6,22 @@ import itertools
 import unittest
 
 import numpy as np
-
 from smt.sampling_methods import LHS
 
 from smt_design_space_ext import (
-    HAS_CONFIG_SPACE,
     HAS_ADSG,
-    AdsgDesignSpaceImpl,
-    ConfigSpaceDesignSpaceImpl,
+    HAS_CONFIG_SPACE,
     BaseDesignSpace,
     CategoricalVariable,
     FloatVariable,
     IntegerVariable,
     OrdinalVariable,
 )
+
+if HAS_CONFIG_SPACE:
+    from smt_design_space_ext import ConfigSpaceDesignSpaceImpl
+if HAS_ADSG:
+    from smt_design_space_ext import AdsgDesignSpaceImpl
 
 
 class Test(unittest.TestCase):
@@ -264,9 +266,7 @@ class Test(unittest.TestCase):
         )
         self.assertTrue(np.all(is_acting_corr))
 
-        x_unfolded, is_acting_unfolded = ds.sample_valid_x(
-            3, unfolded=True, seed=42
-        )
+        x_unfolded, is_acting_unfolded = ds.sample_valid_x(3, unfolded=True, seed=42)
         self.assertEqual(x_unfolded.shape, (3, 6))
         if HAS_CONFIG_SPACE:
             np.testing.assert_allclose(
@@ -414,10 +414,7 @@ class Test(unittest.TestCase):
         for i, xi in enumerate(x_sampled):
             seen_x.add(tuple(xi))
             seen_is_acting.add(tuple(is_acting_sampled[i, :]))
-        if HAS_ADSG:
-            assert len(seen_x) == 43
-        else:
-            assert len(seen_x) == 42
+        assert len(seen_x) == 43
         assert len(seen_is_acting) == 2
 
     @unittest.skipIf(
@@ -673,9 +670,9 @@ class Test(unittest.TestCase):
         "Architecture Design Space Graph or ConfigSpace not installed.",
     )
     def test_adsg_to_legacy(self):
-        from adsg_core import BasicADSG, NamedNode, DesignVariableNode
+        from adsg_core import BasicADSG, DesignVariableNode, GraphProcessor, NamedNode
+
         from smt_design_space_ext.adsg_ds_imp import ensure_design_space
-        from adsg_core import GraphProcessor
 
         # Create the ADSG
         adsg = BasicADSG()

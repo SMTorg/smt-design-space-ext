@@ -1,25 +1,27 @@
-from .version import __version__
-
 from smt.design_space import (
+    BaseDesignSpace,
+    CategoricalVariable,
     DesignSpace,
+    DesignVariable,
     FloatVariable,
     IntegerVariable,
     OrdinalVariable,
-    CategoricalVariable,
-    BaseDesignSpace,
-    DesignVariable,
 )
 
 # Symbols imported in smt to handle hierarchical variables
 from smt_design_space_ext.design_space import (
-    NoDefaultConfigurationSpace,
-    FixedIntegerParam,
-    HAS_CONFIG_SPACE,
     HAS_ADSG,
+    HAS_CONFIG_SPACE,
+    FixedIntegerParam,
+    NoDefaultConfigurationSpace,
 )
-from smt_design_space_ext.cs_ds_imp import ConfigSpaceDesignSpaceImpl
 
-from smt_design_space_ext.adsg_ds_imp import AdsgDesignSpaceImpl
+from .version import __version__
+
+if HAS_CONFIG_SPACE:
+    from smt_design_space_ext.cs_ds_imp import ConfigSpaceDesignSpaceImpl
+if HAS_ADSG:
+    from smt_design_space_ext.adsg_ds_imp import AdsgDesignSpaceImpl
 
 __all__ = [
     "__version__",

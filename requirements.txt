@@ -1,6 +1,6 @@
 smt~=2.10
 ConfigSpace~=1.2.0
-adsg-core~=1.2.0
+adsg-core~=1.4.0
 pytest     # tests runner
 pytest-cov # allows to get coverage report
 ruff       # format and lint code
