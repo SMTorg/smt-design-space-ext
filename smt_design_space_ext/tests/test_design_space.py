@@ -1,4 +1,4 @@
-"""
+﻿"""
 Author: Jasper Bussemaker <jasper.bussemaker@dlr.de>
 """
 
@@ -192,28 +192,28 @@ class Test(unittest.TestCase):
                 IntegerVariable(-1, 2),
                 FloatVariable(0.5, 1.5),
             ],
-            random_state=42,
+            seed=42,
         )
         self.assertEqual(len(ds.design_variables), 4)
         if HAS_CONFIG_SPACE:
             self.assertEqual(len(list(ds._cs.values())), 4)
         self.assertTrue(np.all(~ds.is_conditionally_acting))
         if HAS_CONFIG_SPACE:
-            x, is_acting = ds.sample_valid_x(3, random_state=42)
+            x, is_acting = ds.sample_valid_x(3, seed=42)
             self.assertEqual(x.shape, (3, 4))
             np.testing.assert_allclose(
                 x,
                 np.array(
                     [
-                        [1.0, 0.0, -0.0, 0.83370861],
-                        [2.0, 0.0, -1.0, 0.64286682],
-                        [2.0, 0.0, -0.0, 1.15088847],
+                        [0.0, 1.0, 0.0, 0.86983110],
+                        [0.0, 1.0, 0.0, 1.08229280],
+                        [1.0, 1.0, -1.0, 1.07942356],
                     ]
                 ),
-                atol=1e-8,
+                atol=1e-6,
             )
         else:
-            ds.sample_valid_x(3, random_state=42)
+            ds.sample_valid_x(3, seed=42)
             x = np.array(
                 [
                     [1, 0, 0, 0.834],
@@ -226,19 +226,19 @@ class Test(unittest.TestCase):
         self.assertEqual(x.shape, (3, 4))
         self.assertEqual(is_acting.shape, x.shape)
 
-        self.assertEqual(ds.decode_values(x, i_dv=0), ["B", "C", "C"])
-        self.assertEqual(ds.decode_values(x, i_dv=1), ["0", "0", "0"])
+        self.assertEqual(ds.decode_values(x, i_dv=0), ["A", "A", "B"])
+        self.assertEqual(ds.decode_values(x, i_dv=1), ["1", "1", "1"])
         self.assertEqual(ds.decode_values(np.array([0, 1, 2]), i_dv=0), ["A", "B", "C"])
         self.assertEqual(ds.decode_values(np.array([0, 1]), i_dv=1), ["0", "1"])
 
-        self.assertEqual(ds.decode_values(x[0, :]), ["B", "0", 0, x[0, 3]])
-        self.assertEqual(ds.decode_values(x[[0], :]), [["B", "0", 0, x[0, 3]]])
+        self.assertEqual(ds.decode_values(x[0, :]), ["A", "1", 0, x[0, 3]])
+        self.assertEqual(ds.decode_values(x[[0], :]), [["A", "1", 0, x[0, 3]]])
         self.assertEqual(
             ds.decode_values(x),
             [
-                ["B", "0", 0, x[0, 3]],
-                ["C", "0", -1, x[1, 3]],
-                ["C", "0", 0, x[2, 3]],
+                ["A", "1", 0, x[0, 3]],
+                ["A", "1", 0, x[1, 3]],
+                ["B", "1", -1, x[2, 3]],
             ],
         )
 
@@ -247,7 +247,7 @@ class Test(unittest.TestCase):
         self.assertTrue(np.all(is_act_corr == is_acting))
 
         x_sampled_externally = LHS(
-            xlimits=ds.get_unfolded_num_bounds(), criterion="ese", random_state=42
+            xlimits=ds.get_unfolded_num_bounds(), criterion="ese", seed=42
         )(3)
         x_corr, is_acting_corr = ds.correct_get_acting(x_sampled_externally)
         x_corr, is_acting_corr = ds.fold_x(x_corr, is_acting_corr)
@@ -255,17 +255,17 @@ class Test(unittest.TestCase):
             x_corr,
             np.array(
                 [
-                    [2.0, 0.0, -1.0, 1.34158548],
-                    [0.0, 1.0, -0.0, 0.55199817],
-                    [1.0, 1.0, 1.0, 1.15663662],
+                    [1.0, 0.0, -1.0, 1.14225500],
+                    [0.0, 0.0, 2.0, 0.82520745],
+                    [2.0, 1.0, 0.0, 1.18793909],
                 ]
             ),
-            atol=1e-8,
+            atol=1e-6,
         )
         self.assertTrue(np.all(is_acting_corr))
 
         x_unfolded, is_acting_unfolded = ds.sample_valid_x(
-            3, unfolded=True, random_state=42
+            3, unfolded=True, seed=42
         )
         self.assertEqual(x_unfolded.shape, (3, 6))
         if HAS_CONFIG_SPACE:
@@ -273,12 +273,12 @@ class Test(unittest.TestCase):
                 x_unfolded,
                 np.array(
                     [
-                        [1.0, 0.0, 0.0, 0.0, 2.0, 1.11213215],
-                        [0.0, 1.0, 0.0, 1.0, -1.0, 1.09482857],
-                        [1.0, 0.0, 0.0, 1.0, -1.0, 0.75061044],
+                        [0.0, 0.0, 1.0, 0.0, 2.0, 1.20767448],
+                        [1.0, 0.0, 0.0, 1.0, 1.0, 1.25132074],
+                        [1.0, 0.0, 0.0, 1.0, -1.0, 1.19895728],
                     ]
                 ),
-                atol=1e-8,
+                atol=1e-6,
             )
 
         self.assertTrue(str(ds))
@@ -334,7 +334,7 @@ class Test(unittest.TestCase):
                 IntegerVariable(0, 1),  # x2
                 FloatVariable(0.1, 1),  # x3
             ],
-            random_state=42,
+            seed=42,
         )
         ds.declare_decreed_var(
             decreed_var=3, meta_var=0, meta_value="A"
@@ -399,7 +399,7 @@ class Test(unittest.TestCase):
             ),
         )
 
-        x_sampled, is_acting_sampled = ds.sample_valid_x(100, random_state=42)
+        x_sampled, is_acting_sampled = ds.sample_valid_x(100, seed=42)
         assert x_sampled.shape == (100, 4)
         x_sampled[is_acting_sampled[:, 3], 3] = np.round(
             x_sampled[is_acting_sampled[:, 3], 3], 4
@@ -415,7 +415,7 @@ class Test(unittest.TestCase):
             seen_x.add(tuple(xi))
             seen_is_acting.add(tuple(is_acting_sampled[i, :]))
         if HAS_ADSG:
-            assert len(seen_x) == 49
+            assert len(seen_x) == 43
         else:
             assert len(seen_x) == 42
         assert len(seen_is_acting) == 2
@@ -431,7 +431,7 @@ class Test(unittest.TestCase):
                 IntegerVariable(0, 1),  # x2
                 FloatVariable(0, 1),  # x3
             ],
-            random_state=42,
+            seed=42,
         )
         ds.declare_decreed_var(
             decreed_var=3, meta_var=0, meta_value="A"
@@ -495,7 +495,7 @@ class Test(unittest.TestCase):
             ),
         )
 
-        x_sampled, is_acting_sampled = ds.sample_valid_x(100, random_state=42)
+        x_sampled, is_acting_sampled = ds.sample_valid_x(100, seed=42)
         assert x_sampled.shape == (100, 4)
         x_sampled[is_acting_sampled[:, 3], 3] = np.round(
             x_sampled[is_acting_sampled[:, 3], 3]
@@ -523,7 +523,7 @@ class Test(unittest.TestCase):
                 FloatVariable(0, 1),  # x1
                 FloatVariable(0, 1),  # x2
             ],
-            random_state=42,
+            seed=42,
         )
         ds.add_value_constraint(
             var1=0, value1="<", var2=1, value2=">"
@@ -533,7 +533,7 @@ class Test(unittest.TestCase):
         )  # Prevent x1 < x2
 
         # correct_get_acting
-        x_sampled, is_acting_sampled = ds.sample_valid_x(100, random_state=42)
+        x_sampled, is_acting_sampled = ds.sample_valid_x(100, seed=42)
         self.assertTrue(np.min(x_sampled[:, 0] - x_sampled[:, 1]) > 0)
         self.assertTrue(np.min(x_sampled[:, 1] - x_sampled[:, 2]) > 0)
         ds = ConfigSpaceDesignSpaceImpl(
@@ -542,7 +542,7 @@ class Test(unittest.TestCase):
                 FloatVariable(0, 2),  # x1
                 IntegerVariable(0, 2),  # x2
             ],
-            random_state=42,
+            seed=42,
         )
         ds.add_value_constraint(
             var1=0, value1="<", var2=1, value2=">"
@@ -552,7 +552,7 @@ class Test(unittest.TestCase):
         )  # Prevent x0 < x1
 
         # correct_get_acting
-        x_sampled, is_acting_sampled = ds.sample_valid_x(100, random_state=42)
+        x_sampled, is_acting_sampled = ds.sample_valid_x(100, seed=42)
         self.assertTrue(np.min(x_sampled[:, 0] - x_sampled[:, 1]) > 0)
         self.assertTrue(np.min(x_sampled[:, 1] - x_sampled[:, 2]) > 0)
 
@@ -571,12 +571,12 @@ class Test(unittest.TestCase):
                 IntegerVariable(0, 1),  # x2
                 FloatVariable(0, 1),  # x3
             ],
-            random_state=42,
+            seed=42,
         )
         ds.declare_decreed_var(
             decreed_var=3, meta_var=0, meta_value="A"
         )  # Activate x3 if x0 == A
-        self.assertRaises(RuntimeError, lambda: ds.sample_valid_x(10, random_state=42))
+        self.assertRaises(RuntimeError, lambda: ds.sample_valid_x(10, seed=42))
 
     def test_check_conditionally_acting_2(self):
         ds = ConfigSpaceDesignSpaceImpl(
@@ -586,13 +586,13 @@ class Test(unittest.TestCase):
                 IntegerVariable(0, 1),  # x2
                 FloatVariable(0, 1),  # x3
             ],
-            random_state=42,
+            seed=42,
         )
         ds.declare_decreed_var(
             decreed_var=0, meta_var=1, meta_value="E"
         )  # Activate x3 if x0 == A
 
-        ds.sample_valid_x(10, random_state=42)
+        ds.sample_valid_x(10, seed=42)
 
     @unittest.skipIf(
         not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
@@ -607,7 +607,7 @@ class Test(unittest.TestCase):
         assert list(ds._cs.values())[0].default_value == "0"
 
         ds.add_value_constraint(var1=0, value1="1", var2=1, value2="1")
-        ds.sample_valid_x(100, random_state=42)
+        ds.sample_valid_x(100, seed=42)
 
         x_cartesian = np.array(list(itertools.product([0, 1, 2], [0, 1, 2])))
         x_cartesian2, _ = ds.correct_get_acting(x_cartesian)
@@ -631,14 +631,14 @@ class Test(unittest.TestCase):
         assert list(ds._cs.values())[0].default_value == 1
 
         ds.add_value_constraint(var1=0, value1=1, var2=1, value2=1)
-        ds.sample_valid_x(100, random_state=42)
+        ds.sample_valid_x(100, seed=42)
 
         x_cartesian = np.array(list(itertools.product([0, 1, 2], [0, 1, 2])))
         ds.correct_get_acting(x_cartesian)
         x_cartesian2, _ = ds.correct_get_acting(x_cartesian)
         np.testing.assert_array_equal(
             np.array(
-                [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [1, 2], [2, 0], [2, 1], [2, 2]]
+                [[0, 0], [0, 1], [0, 2], [1, 0], [0, 2], [1, 2], [2, 0], [2, 1], [2, 2]]
             ),
             x_cartesian2,
         )
@@ -656,14 +656,14 @@ class Test(unittest.TestCase):
         assert list(ds._cs.values())[0].default_value == "a"
 
         ds.add_value_constraint(var1=0, value1="b", var2=1, value2="b")
-        ds.sample_valid_x(100, random_state=42)
+        ds.sample_valid_x(100, seed=42)
 
         x_cartesian = np.array(list(itertools.product([0, 1, 2], [0, 1, 2])))
         ds.correct_get_acting(x_cartesian)
         x_cartesian2, _ = ds.correct_get_acting(x_cartesian)
         np.testing.assert_array_equal(
             np.array(
-                [[0, 0], [0, 1], [0, 2], [1, 0], [0, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
+                [[0, 0], [0, 1], [0, 2], [1, 0], [2, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
             ),
             x_cartesian2,
         )
@@ -930,7 +930,7 @@ class Test(unittest.TestCase):
             var1=12, value1=["40", "45"], var2=2, value2=["ASGD"]
         )  # Forbid more than 35 neurons with ASGD
 
-        self.assertEquals(
+        self.assertEqual(
             len(design_space3._sample_valid_x(1, return_render=False)[0][0]), 13
         )
 

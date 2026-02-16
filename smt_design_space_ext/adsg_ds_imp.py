@@ -241,12 +241,12 @@ def _legacy_to_adsg(legacy_ds: "ConfigSpaceDesignSpaceImpl") -> "BasicADSG":
         start_nodes.add(var_node)
 
     # Handle decreed variables (conditional dependencies)
-    for decreed_var in legacy_ds._cs._conditionals:
+    for decreed_var in legacy_ds._cs.conditional_hyperparameters:
         decreed_node = nodes[f"{decreed_var}"]
         if decreed_node in start_nodes:
             start_nodes.remove(decreed_node)
         # Get parent condition(s) from the legacy design space
-        parent_conditions = legacy_ds._cs._parent_conditions_of[decreed_var]
+        parent_conditions = legacy_ds._cs.parent_conditions_of[decreed_var]
         for condition in parent_conditions:
             meta_var = condition.parent.name  # Parent variable
             try:
@@ -264,7 +264,7 @@ def _legacy_to_adsg(legacy_ds: "ConfigSpaceDesignSpaceImpl") -> "BasicADSG":
                 ].index(str(value)[:])
                 value_node = meta_nodes[meta_node_ind]
 
-                nodes[f"x{legacy_ds._cs._hyperparameter_idx[meta_var]}"]
+                nodes[f"x{legacy_ds._cs.index_of[meta_var]}"]
                 adsg.add_edge(
                     value_node, decreed_node
                 )  # Linking decreed node to meta node
@@ -273,10 +273,10 @@ def _legacy_to_adsg(legacy_ds: "ConfigSpaceDesignSpaceImpl") -> "BasicADSG":
     for value_constraint in legacy_ds._cs.forbidden_clauses:
         clause1 = value_constraint.components[0]
         var1 = clause1.hyperparameter.name
-        values1 = clause1.value or clause1.values
+        values1 = getattr(clause1, "values", None) or [getattr(clause1, "value", None)]
         clause2 = value_constraint.components[1]
         var2 = clause2.hyperparameter.name
-        values2 = clause2.value or clause2.values
+        values2 = getattr(clause2, "values", None) or [getattr(clause2, "value", None)]
 
         for value1 in values1:
             for value2 in values2:
@@ -305,16 +305,14 @@ class AdsgDesignSpaceImpl(BaseDesignSpace):
         self,
         adsg=None,
         design_variables=None,
-        random_state=None,
+        seed=None,
     ):
-        self.random_state = random_state  # For testing
-        seed = self._to_seed(random_state)
         if adsg is not None:
             self.adsg = adsg
         elif design_variables is not None:
             # to do
             self.ds_leg = ConfigSpaceDesignSpaceImpl(
-                design_variables=design_variables, random_state=seed
+                design_variables=design_variables, seed=seed
             )
             self.adsg = _legacy_to_adsg(self.ds_leg)
             pass
@@ -330,7 +328,7 @@ class AdsgDesignSpaceImpl(BaseDesignSpace):
 
         design_space = ensure_design_space(design_space=self.adsg)
         self._design_variables = design_space.design_variables
-        super().__init__(design_variables=self._design_variables, random_state=seed)
+        super().__init__(design_variables=self._design_variables, seed=seed)
         self._cs = design_space._cs
         self._cs_cate = design_space._cs_cate
         self._is_decreed = design_space._is_decreed
@@ -394,7 +392,7 @@ class AdsgDesignSpaceImpl(BaseDesignSpace):
     def _sample_valid_x(
         self,
         n: int,
-        random_state=None,
+        seed=None,
         return_render=False,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Sample design vectors"""

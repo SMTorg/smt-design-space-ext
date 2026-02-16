@@ -71,7 +71,7 @@ from smt_design_space_ext import (
                 IntegerVariable(0, 1),  # x2
                 FloatVariable(0.1, 1),  # x3
             ],
-            random_state=42,
+            seed=42,
         )
         ds.declare_decreed_var(
             decreed_var=3, meta_var=0, meta_value="A"
