@@ -4,10 +4,10 @@ Author: Jasper Bussemaker <jasper.bussemaker@dlr.de>
 This package is distributed under New BSD license.
 """
 
+import importlib
 from typing import List, Union
 
 import numpy as np
-
 
 # Here we import design space base classes from smt
 # We do not import smt.design_space as it would be circular!!!
@@ -15,7 +15,6 @@ from smt.design_space import (
     BaseDesignSpace,
     DesignSpace,
 )
-import importlib
 
 spec_cs = importlib.util.find_spec("ConfigSpace")
 if spec_cs:

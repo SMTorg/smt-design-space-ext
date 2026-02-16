@@ -10,26 +10,31 @@ from typing import List, Tuple, Union
 
 import numpy as np
 
-
 # Here we import design space base classes from smt
 # We do not import smt.design_space as it would be circular!!!
 from smt_design_space_ext import (
+    HAS_ADSG,
+    HAS_CONFIG_SPACE,
+    BaseDesignSpace,
+    CategoricalVariable,
     FloatVariable,
     IntegerVariable,
     OrdinalVariable,
-    CategoricalVariable,
-    BaseDesignSpace,
-    ConfigSpaceDesignSpaceImpl,
-    HAS_ADSG,
-    HAS_CONFIG_SPACE,
 )
 
+if HAS_CONFIG_SPACE:
+    from smt_design_space_ext import ConfigSpaceDesignSpaceImpl
 
-from adsg_core.graph.graph_edges import EdgeType
-from adsg_core import GraphProcessor, SelectionChoiceNode
+
+from adsg_core import (
+    BasicADSG,
+    DesignVariableNode,
+    GraphProcessor,
+    NamedNode,
+    SelectionChoiceNode,
+)
 from adsg_core.graph.adsg import ADSG
-from adsg_core import BasicADSG, NamedNode, DesignVariableNode
-
+from adsg_core.graph.graph_edges import EdgeType
 
 VarValueType = Union[int, str, List[Union[int, str]]]
 

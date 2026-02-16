@@ -9,22 +9,6 @@ Created on Tue Oct 22 15:50:49 2024
 from typing import List, Sequence, Tuple, Union
 
 import numpy as np
-
-from smt.sampling_methods import LHS
-
-# Here we import design space base classes from smt
-# We do not import smt.design_space as it would be circular!!!
-from smt_design_space_ext import (
-    FloatVariable,
-    IntegerVariable,
-    OrdinalVariable,
-    CategoricalVariable,
-    BaseDesignSpace,
-    DesignVariable,
-    HAS_ADSG,
-    HAS_CONFIG_SPACE,
-)
-
 from ConfigSpace import (
     CategoricalHyperparameter,
     Configuration,
@@ -40,6 +24,20 @@ from ConfigSpace import (
 )
 from ConfigSpace.exceptions import ForbiddenValueError
 from ConfigSpace.util import get_random_neighbor
+from smt.sampling_methods import LHS
+
+# Here we import design space base classes from smt
+# We do not import smt.design_space as it would be circular!!!
+from smt_design_space_ext import (
+    HAS_ADSG,
+    HAS_CONFIG_SPACE,
+    BaseDesignSpace,
+    CategoricalVariable,
+    DesignVariable,
+    FloatVariable,
+    IntegerVariable,
+    OrdinalVariable,
+)
 
 if HAS_ADSG:
     from adsg_core.graph.adsg import ADSG
@@ -49,7 +47,6 @@ from smt_design_space_ext import (
     FixedIntegerParam,
     NoDefaultConfigurationSpace,
 )
-
 
 VarValueType = Union[int, str, List[Union[int, str]]]
 
