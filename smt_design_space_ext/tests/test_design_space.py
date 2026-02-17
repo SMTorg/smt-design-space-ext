@@ -183,9 +183,15 @@ class Test(unittest.TestCase):
 
         np.testing.assert_array_equal(is_act_fold_mask, is_acting)
 
+    @unittest.skipIf(
+        not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
+    )
     def test_create_design_space(self):
         ConfigSpaceDesignSpaceImpl([FloatVariable(0, 1)])
 
+    @unittest.skipIf(
+        not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
+    )
     def test_design_space(self):
         ds = ConfigSpaceDesignSpaceImpl(
             [
@@ -286,6 +292,9 @@ class Test(unittest.TestCase):
 
         ds.correct_get_acting(np.array([[0, 0, 0, 1.6]]))
 
+    @unittest.skipIf(
+        not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
+    )
     def test_folding_mask(self):
         ds = ConfigSpaceDesignSpaceImpl(
             [
@@ -310,6 +319,9 @@ class Test(unittest.TestCase):
         self.assertTrue(np.all(x_folded == x))
         self.assertTrue(np.all(is_act_folded == is_act))
 
+    @unittest.skipIf(
+        not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
+    )
     def test_float_design_space(self):
         ds = ConfigSpaceDesignSpaceImpl([(0, 1), (0.5, 2.5), (-0.4, 10)])
         assert ds.n_dv == 3
@@ -326,6 +338,9 @@ class Test(unittest.TestCase):
         assert all(isinstance(dv, FloatVariable) for dv in ds.design_variables)
         assert np.all(ds.get_num_bounds() == np.array([[0, 1], [0.5, 2.5], [-0.4, 10]]))
 
+    @unittest.skipIf(
+        not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
+    )
     def test_design_space_hierarchical(self):
         ds = ConfigSpaceDesignSpaceImpl(
             [
@@ -575,6 +590,9 @@ class Test(unittest.TestCase):
         )  # Activate x3 if x0 == A
         self.assertRaises(RuntimeError, lambda: ds.sample_valid_x(10, seed=42))
 
+    @unittest.skipIf(
+        not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
+    )
     def test_check_conditionally_acting_2(self):
         ds = ConfigSpaceDesignSpaceImpl(
             [
@@ -931,6 +949,9 @@ class Test(unittest.TestCase):
             len(design_space3._sample_valid_x(1, return_render=False)[0][0]), 13
         )
 
+    @unittest.skipIf(
+        not HAS_CONFIG_SPACE, "Hierarchy ConfigSpace dependency not installed"
+    )
     def test_smt(self):
         from smt.applications.tests import TestMixedInteger
 

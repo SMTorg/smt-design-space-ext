@@ -30,6 +30,7 @@ jobs:
         pip install -r requirements.txt 
         pip list
         pip install .
+        pip uninstall adsg-core  -y
 
     - name: Check with ruff
       run: |
