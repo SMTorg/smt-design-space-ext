@@ -29,8 +29,8 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt 
         pip list
-        pip install -e .
-        pip uninstall adsg-core
+        pip install .
+        pip uninstall adsg-core  -y
 
     - name: Check with ruff
       run: |
