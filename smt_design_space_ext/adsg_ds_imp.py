@@ -353,17 +353,20 @@ class AdsgDesignSpaceImpl(BaseDesignSpace):
         meta_value: int | str | list[int|str]
            - The value or list of values that the meta variable can have to activate the decreed var
         """
+        try:
+            self.ds_leg.declare_decreed_var(
+                decreed_var=decreed_var, meta_var=meta_var, meta_value=meta_value
+            )
+            self.adsg = _legacy_to_adsg(self.ds_leg)
+            design_space = ensure_design_space(design_space=self.adsg)
+            self._design_variables = design_space.design_variables
+            self._cs = design_space._cs
+            self._cs_cate = design_space._cs_cate
+            self._is_decreed = design_space._is_decreed
+            self.graph_proc = GraphProcessor(graph=self.adsg)
 
-        self.ds_leg.declare_decreed_var(
-            decreed_var=decreed_var, meta_var=meta_var, meta_value=meta_value
-        )
-        self.adsg = _legacy_to_adsg(self.ds_leg)
-        design_space = ensure_design_space(design_space=self.adsg)
-        self._design_variables = design_space.design_variables
-        self._cs = design_space._cs
-        self._cs_cate = design_space._cs_cate
-        self._is_decreed = design_space._is_decreed
-        self.graph_proc = GraphProcessor(graph=self.adsg)
+        except ValueError:
+            print(f"{ValueError}: (ADSG incompatible with integer variable as meta)") 
 
     def add_value_constraint(
         self, var1: int, value1: VarValueType, var2: int, value2: VarValueType
