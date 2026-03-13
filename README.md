@@ -99,6 +99,9 @@ This dynamically builds a tree-like structure of variables, enabling clear and c
 - Author metadata and license summary confirm this is BSD‑licensed.
 
 ---
+## 📜 License
+
+Distributed under the **BSD-3-Clause** license. See [LICENSE](LICENSE) for details.
 
 ## ✅ Citation
 
@@ -121,6 +124,4 @@ If you use this package in research, please cite our published paper:
 }
 ---
 
-## 📜 License
 
-Distributed under the **BSD-3-Clause** license. See [LICENSE](LICENSE) for details.
