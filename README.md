@@ -102,14 +102,25 @@ This dynamically builds a tree-like structure of variables, enabling clear and c
 
 ## ✅ Citation
 
-If you use this package in research, please cite:
+## ✅ Citation
 
-```
-P. Saves, E. Hallé‑Hannan, J. Bussemaker, Y. Diouane, N. Bartoli,
-“Hierarchical Modeling and Architecture Optimization: Review and Unified Framework,”
-arXiv:2506.22621, June 2025.
-```
+If you use this package in research, please cite our published paper:
 
+> P. Saves, E. Hallé-Hannan, J. Bussemaker, Y. Diouane, and N. Bartoli, "Modeling Hierarchical Spaces: A Review and Unified Framework for Surrogate-Based Architecture Design," *Structural and Multidisciplinary Optimization*, vol. 69, no. 3, p. 65, Feb. 2026. DOI: [10.1007/s00158-026-04249-2](https://doi.org/10.1007/s00158-026-04249-2).
+
+```bibtex
+@article{saves2026modeling,
+  title={Modeling hierarchical spaces: a review and unified framework for surrogate-based architecture design},
+  author={Saves, Paul and Hall{\'e}-Hannan, Edward and Bussemaker, Jasper and Diouane, Youssef and Bartoli, Nathalie},
+  journal={Structural and Multidisciplinary Optimization},
+  volume={69},
+  number={3},
+  pages={65},
+  year={2026},
+  publisher={Springer Nature},
+  doi={10.1007/s00158-026-04249-2},
+  url={[https://doi.org/10.1007/s00158-026-04249-2](https://doi.org/10.1007/s00158-026-04249-2)}
+}
 ---
 
 ## 📜 License
