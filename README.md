@@ -32,7 +32,7 @@ In many engineering and simulation contexts, the design parameters form a struct
 This implementation is based on:
 
 > **Hierarchical Modeling and Architecture Optimization: Review and Unified Framework**  
-> P. Saves, E. Hallé‑Hannan, J. Bussemaker, Y. Diouane, N. Bartoli (June 2025). arXiv:2506.22621 ([arXiv](https://arxiv.org/abs/2506.22621))
+> P. Saves, E. Hallé-Hannan, J. Bussemaker, Y. Diouane, and N. Bartoli, "Modeling Hierarchical Spaces: A Review and Unified Framework for Surrogate-Based Architecture Design," Structural and Multidisciplinary Optimization, vol. 69, no. 3, p. 65, Feb. 2026. DOI: 10.1007/s00158-026-04249-2.
 
 The paper provides a comprehensive survey and introduces a unified graph-based model that serves as the theoretical foundation for this extension.
 
@@ -99,8 +99,6 @@ This dynamically builds a tree-like structure of variables, enabling clear and c
 - Author metadata and license summary confirm this is BSD‑licensed.
 
 ---
-
-## ✅ Citation
 
 ## ✅ Citation
 
