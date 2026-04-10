@@ -275,9 +275,14 @@ def _legacy_to_adsg(legacy_ds: "ConfigSpaceDesignSpaceImpl") -> "BasicADSG":
                 )  # Linking decreed node to meta node
 
     # Handle value constraints (incompatibilities)
+    # Handle value constraints (incompatibilities)
     for value_constraint in legacy_ds._cs.forbidden_clauses:
+        # NEW FIX: Skip LessThan relations for ADSG graph building
+        if value_constraint.__class__.__name__ == "ForbiddenLessThanRelation":
+            continue
+            
         clause1 = value_constraint.components[0]
-        var1 = clause1.hyperparameter.name
+        var1 = clause1.hyperparameter.nam
         values1 = getattr(clause1, "values", None) or [getattr(clause1, "value", None)]
         clause2 = value_constraint.components[1]
         var2 = clause2.hyperparameter.name
