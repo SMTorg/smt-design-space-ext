@@ -282,7 +282,7 @@ def _legacy_to_adsg(legacy_ds: "ConfigSpaceDesignSpaceImpl") -> "BasicADSG":
             continue
             
         clause1 = value_constraint.components[0]
-        var1 = clause1.hyperparameter.nam
+        var1 = clause1.hyperparameter.name
         values1 = getattr(clause1, "values", None) or [getattr(clause1, "value", None)]
         clause2 = value_constraint.components[1]
         var2 = clause2.hyperparameter.name
